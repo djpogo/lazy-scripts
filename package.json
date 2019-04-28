@@ -1,0 +1,15 @@
+{
+  "name": "lazy-scripts",
+  "description": "load, parse and execute scripts when needed",
+  "version": "0.0.1",
+  "keywords": [
+    "lazy-loading",
+    "javascript"
+  ],
+  "licenses": [
+    {
+      "name": "GNU General Public License v3.0",
+      "url": "https://www.gnu.org/licenses/gpl-3.0.en.html"
+    }
+  ]
+}
