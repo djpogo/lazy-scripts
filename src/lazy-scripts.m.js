@@ -47,7 +47,7 @@ export default class {
    */
   loadScript(scriptsSrc, element) {
     const scriptSrc = scriptsSrc.shift();
-    if (this.loadedScripts.indexOf(scriptSrc) === -1) {
+    if (scriptSrc && this.loadedScripts.indexOf(scriptSrc) === -1) {
       const script = document.createElement('script');
       this.loadedScripts.push(scriptSrc);
       script.type = 'text/javascript';
