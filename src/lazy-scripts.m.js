@@ -25,9 +25,7 @@ export default class {
    */
   // eslint-disable-next-line class-methods-use-this
   hyphensToCamelCase(string) {
-    string.replace('[data-', '');
-    string.replace(']', '');
-    return string.replace(/-([a-z])/g, g => g[1].toUpperCase());
+    return string.replace('[data-', '').replace(']', '').replace(/-([a-z])/g, g => g[1].toUpperCase());
   }
 
   /**
@@ -73,8 +71,8 @@ export default class {
       this.loadScript(lazyElement.dataset[this.lazyScriptDataName], lazyElement);
     }
 
-    const scripts = JSON.parse(lazyElement.dataset[this.lazyScriptsDataName] || []);
-    scripts.each(script => this.loadScript(script, lazyElement, true));
+    const scripts = JSON.parse(lazyElement.dataset[this.lazyScriptsDataName] || '[]');
+    scripts.forEach(script => this.loadScript(script, lazyElement, true));
   }
 
   /**
@@ -94,7 +92,7 @@ export default class {
    * @param {IntersectionObserver} observer - the IntersectionObserver itself
    */
   intersectionCallback(entries, observer) {
-    entries.each((entry) => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) {
         this.processElement(entry.target);
         observer.unobserve(entry.target);
@@ -118,7 +116,7 @@ export default class {
     }
 
     const io = new IntersectionObserver(
-      this.intersectionCallback,
+      (entries, observer) => this.intersectionCallback(entries, observer),
       this.options.intersectionObserverOptions,
     );
 
