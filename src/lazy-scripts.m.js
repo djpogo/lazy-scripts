@@ -42,20 +42,22 @@ export default class {
   /**
    * create a `<script>` element, add type, defer and src attribute
    * and append it into the lazyElement
-   * @param {String} scriptSrc - full path to js file
+   * @param {Array} scriptsSrc - Array with full paths to js files
    * @param {HTMLElement} element - element the script will be append to
-   * @param {Boolean} defer - optional flag if script tag should have `defer` attribute
    */
-  loadScript(scriptSrc, element, defer = false) {
+  loadScript(scriptsSrc, element) {
+    const scriptSrc = scriptsSrc.shift();
     if (this.loadedScripts.indexOf(scriptSrc) === -1) {
       const script = document.createElement('script');
-      script.type = 'text/javascript';
-      if (defer) {
-        script.defer = true;
-      }
-      script.src = scriptSrc;
-      element.appendChild(script);
       this.loadedScripts.push(scriptSrc);
+      script.type = 'text/javascript';
+      script.src = scriptSrc;
+      if (scriptsSrc.length > 0) {
+        script.onload = () => {
+          this.loadScript(scriptsSrc, element);
+        };
+      }
+      element.appendChild(script);
     }
   }
 
@@ -68,11 +70,11 @@ export default class {
   processElement(lazyElement) {
     // process single script data attribute
     if (lazyElement.dataset[this.lazyScriptDataName]) {
-      this.loadScript(lazyElement.dataset[this.lazyScriptDataName], lazyElement);
+      this.loadScript([lazyElement.dataset[this.lazyScriptDataName]], lazyElement);
     }
 
     const scripts = JSON.parse(lazyElement.dataset[this.lazyScriptsDataName] || '[]');
-    scripts.forEach(script => this.loadScript(script, lazyElement, true));
+    this.loadScript(scripts, lazyElement);
   }
 
   /**
