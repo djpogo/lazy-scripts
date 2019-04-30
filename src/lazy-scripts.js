@@ -58,6 +58,9 @@ export default class {
         };
       }
       element.appendChild(script);
+    } else if (scriptSrc.length > 0) {
+        this.loadScript(scriptsSrc, element);
+      }
     }
   }
 
