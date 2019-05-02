@@ -16,6 +16,7 @@ or
 ```
   <div class="my-slider" data-lazy-scripts='["/path/to/a/3rd-party/slider-lib.js","/path/to/my-slider.js"]'>…</div>
 ```
+***!important:*** *take care of JSON.parse compatible Array-String when you use `data-lazy-scripts`.*
 
 and that's it.
 
@@ -33,7 +34,19 @@ new LazyScripts();
 
 ```<script src="/modules/vendor/lazy-scripts.js"></script>```
 
-ES-5 is written as IIFE, so it will be immediately executed.
+## Options
+
+The constructor call `new LazyScripts()` supports an optoin object like this:
+
+```
+  new LazyScripts({
+    lazyScriptSelector: '[data-load-script]',
+    lazyScriptsSelector: '[data-load-scripts]'
+  });
+```
+
+by default the scripts will query your DOM for `data-lazy-script` for a single path to a js file, and `data-lazy-scripts` for array notated scripts, load, parsed and executed in array order.
+
 
 ## Script Adjustments
 

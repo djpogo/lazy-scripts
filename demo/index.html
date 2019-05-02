@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>🐨 lazy-scripts demo 🐨</title>
+    </head>
+    <body>
+        <section class="x-50vh">
+            <style style="display: block">
+                html, body {
+                    width: 100vw;
+                    height: 100vh;
+                    max-width: 100%;
+                    margin: 0;
+                    padding:0;
+                }
+                style {
+                    white-space: pre;
+                    font-family: monospace;
+                }
+                *,*::after,*::before { 
+                    box-sizing: border-box;
+                }
+                .x-100vh {
+                    min-height: 100vh;
+                    border: 1px solid purple;
+                }
+                .x-100vh::before {
+                    content: "100 vh…";
+                    color: purple;
+                    font-family: 'Times New Roman', Times, serif;
+                    font-style: italic;
+                }
+                .x-50vh {
+                    min-height: 50vh;
+                    border: 1px solid darkgreen;
+                }
+                .x-50vh::before {
+                    color: darkgreen;
+                    font-family: 'Times New Roman', Times, serif;
+                    font-style: italic;
+                    content: "50vh…";
+                }
+                .x-scroll-down {
+                    display: inline-block;
+                    position: relative;
+                    width: 1em;
+                    height: 1.2em;
+                    overflow: hidden;
+                }
+                .x-scroll-down::before {
+                    content: "🐨";
+                    display: block;
+                    transform: rotate(90deg);
+                }
+            </style>
+            …<span class="x-scroll-down"></span>scroll down<span class="x-scroll-down"></span>…
+        </section>
+        <section class="x-50vh" data-lazy-script="/demo/dummy-js/script-1.js">
+
+        </section>
+        <section class="x-50vh">
+            
+        </section>
+        <section class="x-100vh">
+            
+        </section>
+        <section class="x-50vh" data-lazy-scripts='["https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js","/demo/dummy-js/script-2.js"]'>
+            
+        </section>
+        <section class="x-100vh">
+            
+        </section>
+        <script type="module">
+            import LazyScripts from "../src/lazy-scripts.m.js";
+            new LazyScripts();
+        </script>
+    </body>
+</html>

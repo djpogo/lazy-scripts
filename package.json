@@ -6,6 +6,11 @@
     "lazy-loading",
     "javascript"
   ],
+  "author": {
+      "name": "Raoul Kramer",
+      "email": "hello@raoulkramer.de",
+      "web": "https://raoulkramer.de/"
+  },
   "licenses": [
     {
       "name": "GNU General Public License v3.0",
@@ -28,5 +33,13 @@
     "demo": "http-server ./ -o",
     "compile": "babel -d dist/ src/",
     "prepublish": "npm run compile"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/djpogo/lazy-scripts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/djpogo/lazy-scripts/issues"
+  },
+  "homepage": "https://lazyscripts.raoulkramer.de"
 }
