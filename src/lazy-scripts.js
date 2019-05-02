@@ -13,8 +13,6 @@ export default function (customOptions = {}) {
     `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
   );
 
-  
-
   /**
    * convert the `querySelectorAll` compatible class options of lazySelectors and
    * return a string, you can use in `dataset[string]`
