@@ -1,21 +1,19 @@
-export default class {
-  constructor(options = {}) {
-    this.options = {
-      lazyScriptSelector: '[data-lazy-script]',
-      lazyScriptsSelector: '[data-lazy-scripts]',
-      ...options,
-    };
+export default function (customOptions = {}) {
+  const options = {
+    lazyScriptSelector: '[data-lazy-script]',
+    lazyScriptsSelector: '[data-lazy-scripts]',
+    ...customOptions,
+  };
 
-    this.lazyScriptDataName = this.hyphensToCamelCase(this.options.lazyScriptSelector);
-    this.lazyScriptsDataName = this.hyphensToCamelCase(this.options.lazyScriptsSelector);
+  const lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
+  const lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
 
-    this.loadedScripts = [];
-    this.initLoadedScripts();
-    this.lazyScripts = document.querySelectorAll(
-      `${this.options.lazyScriptSelector}, ${this.options.lazyScriptsSelector}`
-    );
-    this.setup();
-  }
+  const loadedScripts = [];
+  const lazyScripts = document.querySelectorAll(
+    `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
+  );
+
+  
 
   /**
    * convert the `querySelectorAll` compatible class options of lazySelectors and
@@ -23,8 +21,7 @@ export default class {
    * @see https://stackoverflow.com/a/6661012
    * @param {String} string - the text you want to convert
    */
-  // eslint-disable-next-line class-methods-use-this
-  hyphensToCamelCase(string) {
+  function hyphensToCamelCase(string) {
     return string.replace('[data-', '').replace(']', '').replace(/-([a-z])/g, g => g[1].toUpperCase());
   }
 
@@ -33,9 +30,9 @@ export default class {
    * to know that they are available and don't need to
    * be loaded again
    */
-  initLoadedScripts() {
+  function initLoadedScripts() {
     document.querySelectorAll('script').forEach((script) => {
-      this.loadedScripts.push(script.src);
+      loadedScripts.push(script.src);
     });
   }
 
@@ -45,21 +42,21 @@ export default class {
    * @param {Array} scriptsSrc - Array with full paths to js files
    * @param {HTMLElement} element - element the script will be append to
    */
-  loadScript(scriptsSrc, element) {
+  function loadScript(scriptsSrc, element) {
     const scriptSrc = scriptsSrc.shift();
-    if (scriptSrc && this.loadedScripts.indexOf(scriptSrc) === -1) {
+    if (scriptSrc && loadedScripts.indexOf(scriptSrc) === -1) {
       const script = document.createElement('script');
-      this.loadedScripts.push(scriptSrc);
+      loadedScripts.push(scriptSrc);
       script.type = 'text/javascript';
       script.src = scriptSrc;
       if (scriptsSrc.length > 0) {
         script.onload = () => {
-          this.loadScript(scriptsSrc, element);
+          loadScript(scriptsSrc, element);
         };
       }
       element.appendChild(script);
     } else if (scriptSrc.length > 0) {
-      this.loadScript(scriptsSrc, element);
+      loadScript(scriptsSrc, element);
     }
   }
 
@@ -69,22 +66,22 @@ export default class {
    * load its scripts
    * @param {HTMLElement} lazyElement - the element which entered the viewport and will be processed
    */
-  processElement(lazyElement) {
+  function processElement(lazyElement) {
     // process single script data attribute
-    if (lazyElement.dataset[this.lazyScriptDataName]) {
-      this.loadScript([lazyElement.dataset[this.lazyScriptDataName]], lazyElement);
+    if (lazyElement.dataset[lazyScriptDataName]) {
+      loadScript([lazyElement.dataset[lazyScriptDataName]], lazyElement);
     }
 
-    const scripts = JSON.parse(lazyElement.dataset[this.lazyScriptsDataName] || '[]');
-    this.loadScript(scripts, lazyElement);
+    const scripts = JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]');
+    loadScript(scripts, lazyElement);
   }
 
   /**
    * if no IntersectionObserver (and no polyfill) is found,
    * all scripts are gonna be loaded in a batch
    */
-  fallbackScriptLoad() {
-    this.lazyScripts.forEach(lazyScript => this.processElement(lazyScript));
+  function fallbackScriptLoad() {
+    lazyScripts.forEach(lazyScript => processElement(lazyScript));
   }
 
   /**
@@ -95,10 +92,10 @@ export default class {
    * @param {Array} entries - IntersectionObserver entry array
    * @param {IntersectionObserver} observer - the IntersectionObserver itself
    */
-  intersectionCallback(entries, observer) {
+  function intersectionCallback(entries, observer) {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        this.processElement(entry.target);
+        processElement(entry.target);
         observer.unobserve(entry.target);
       }
     });
@@ -109,23 +106,26 @@ export default class {
    * or start loading all scripts within a `requestAnimationFrame`
    * callback - if available
    */
-  setup() {
+  function setup() {
+    initLoadedScripts();
     if (!window.IntersectionObserver) {
       if (!window.requestAnimationFrame) {
-        this.fallbackScriptLoad();
+        fallbackScriptLoad();
       } else {
-        window.requestAnimationFrame(() => this.fallbackScriptLoad());
+        window.requestAnimationFrame(() => fallbackScriptLoad());
       }
       return;
     }
 
     const io = new IntersectionObserver(
-      (entries, observer) => this.intersectionCallback(entries, observer),
-      this.options.intersectionObserverOptions,
+      (entries, observer) => intersectionCallback(entries, observer),
+      options.intersectionObserverOptions,
     );
 
-    this.lazyScripts.forEach((lazyScript) => {
+    lazyScripts.forEach((lazyScript) => {
       io.observe(lazyScript);
     });
   }
+
+  setup();
 }
