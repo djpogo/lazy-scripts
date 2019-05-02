@@ -1,5 +1,5 @@
 {
-  "name": "lazy-scripts",
+  "name": "LazyScripts",
   "description": "load, parse and execute scripts when needed",
   "version": "0.0.1",
   "keywords": [
@@ -7,10 +7,13 @@
     "javascript"
   ],
   "author": {
-      "name": "Raoul Kramer",
-      "email": "hello@raoulkramer.de",
-      "web": "https://raoulkramer.de/"
+    "name": "Raoul Kramer",
+    "email": "hello@raoulkramer.de",
+    "web": "https://raoulkramer.de/"
   },
+  "browser": "dist/lazy-scripts.min.js",
+  "main": "dist/lazy-scripts.js",
+  "module": "dist/lazy-scripts.es.js",
   "licenses": [
     {
       "name": "GNU General Public License v3.0",
@@ -18,21 +21,25 @@
     }
   ],
   "devDependencies": {
-    "@babel/cli": "^7.4.4",
     "@babel/core": "^7.4.4",
-    "@babel/plugin-transform-modules-amd": "^7.2.0",
     "@babel/preset-env": "^7.4.4",
+    "@babel/preset-stage-0": "^7.0.0",
     "eslint": "^5.3.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.17.2",
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.12.4",
-    "http-server": "^0.11.1"
+    "http-server": "^0.11.1",
+    "rollup": "^1.10.1",
+    "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-filesize": "^6.0.1",
+    "rollup-plugin-license": "^0.8.1",
+    "rollup-plugin-uglify": "^6.0.2"
   },
   "scripts": {
     "demo": "http-server ./ -o",
-    "compile": "babel -d dist/ src/",
-    "prepublish": "npm run compile"
+    "build": "rollup -c",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
