@@ -53,7 +53,7 @@ export default function (customOptions = {}) {
         };
       }
       element.appendChild(script);
-    } else if (scriptSrc.length > 0) {
+    } else if (scriptsSrc.length > 0) {
       loadScript(scriptsSrc, element);
     }
   }
