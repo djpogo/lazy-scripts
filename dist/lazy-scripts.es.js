@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.0.1 - 2019-05-02
+/*! LazyScripts - v0.0.1 - 2019-05-03
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -17,8 +17,6 @@ function lazyScripts (customOptions = {}) {
   const lazyScripts = document.querySelectorAll(
     `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
   );
-
-  
 
   /**
    * convert the `querySelectorAll` compatible class options of lazySelectors and
@@ -60,7 +58,7 @@ function lazyScripts (customOptions = {}) {
         };
       }
       element.appendChild(script);
-    } else if (scriptSrc.length > 0) {
+    } else if (scriptsSrc.length > 0) {
       loadScript(scriptsSrc, element);
     }
   }
