@@ -5,6 +5,11 @@
     </head>
     <body>
         <section class="x-50vh">
+            <h1>LazyScripts Demo</h1>
+            <pre>
+                &lt;script src="lazy-scripts.min.js">&lt;/script>
+                &lt;script>new LazyScripts();&lt;/script>
+            </pre>
             <style style="display: block">
                 html, body {
                     width: 100vw;
@@ -12,6 +17,11 @@
                     max-width: 100%;
                     margin: 0;
                     padding:0;
+                    font-family: 'Times New Roman', Times, serif;
+                }
+                p {
+                    font-family: 'Times New Roman', Times, serif;
+                    font-style: italic;
                 }
                 style {
                     white-space: pre;
@@ -23,6 +33,7 @@
                 .x-100vh {
                     min-height: 100vh;
                     border: 1px solid purple;
+                    padding: 10px;
                 }
                 .x-100vh::before {
                     content: "100 vh…";
@@ -31,6 +42,7 @@
                     font-style: italic;
                 }
                 .x-50vh {
+                    padding: 10px;
                     min-height: 50vh;
                     border: 1px solid darkgreen;
                 }
@@ -55,8 +67,8 @@
             </style>
             …<span class="x-scroll-down"></span>scroll down<span class="x-scroll-down"></span>…
         </section>
-        <section class="x-50vh" data-lazy-script="/demo/dummy-js/script-1.js">
-
+        <section class="x-50vh" data-script-one-target data-lazy-script="/demo/dummy-js/script-1.js">
+            <p>Script 1 Container</p>
         </section>
         <section class="x-50vh">
             
@@ -64,11 +76,11 @@
         <section class="x-100vh">
             
         </section>
-        <section class="x-50vh" data-lazy-scripts='["https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js","/demo/dummy-js/script-2.js"]'>
-            
+        <section class="x-50vh" data-script-two-target data-lazy-scripts='["https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js","/demo/dummy-js/script-2.js"]'>
+            <p>Script 2 Container</p>
         </section>
         <section class="x-100vh">
-            
+            <p>thats it</p>
         </section>
         <script src="../dist/lazy-scripts.js"></script>
         <script>
