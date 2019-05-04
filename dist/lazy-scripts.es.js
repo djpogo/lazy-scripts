@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.0.1 - 2019-05-03
+/*! LazyScripts - v0.0.1 - 2019-05-04
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -10,13 +10,11 @@ function lazyScripts (customOptions = {}) {
     ...customOptions,
   };
 
-  const lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
-  const lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
+  let lazyScriptDataName = '';
+  let lazyScriptsDataName = '';
 
   const loadedScripts = [];
-  const lazyScripts = document.querySelectorAll(
-    `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
-  );
+  const lazyScripts = document.querySelectorAll(`${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`);
 
   /**
    * convert the `querySelectorAll` compatible class options of lazySelectors and
@@ -111,6 +109,8 @@ function lazyScripts (customOptions = {}) {
    */
   function setup() {
     initLoadedScripts();
+    lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
+    lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
     if (!window.IntersectionObserver) {
       if (!window.requestAnimationFrame) {
         fallbackScriptLoad();

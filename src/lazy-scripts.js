@@ -5,13 +5,11 @@ export default function (customOptions = {}) {
     ...customOptions,
   };
 
-  const lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
-  const lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
+  let lazyScriptDataName = '';
+  let lazyScriptsDataName = '';
 
   const loadedScripts = [];
-  const lazyScripts = document.querySelectorAll(
-    `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
-  );
+  const lazyScripts = document.querySelectorAll(`${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`);
 
   /**
    * convert the `querySelectorAll` compatible class options of lazySelectors and
@@ -106,6 +104,8 @@ export default function (customOptions = {}) {
    */
   function setup() {
     initLoadedScripts();
+    lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
+    lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
     if (!window.IntersectionObserver) {
       if (!window.requestAnimationFrame) {
         fallbackScriptLoad();
