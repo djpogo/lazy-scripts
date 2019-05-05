@@ -1,9 +1,16 @@
-/*! LazyScripts - v0.0.1 - 2019-05-04
+/*! LazyScripts - v0.0.1 - 2019-05-05
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
 
-function lazyScripts (customOptions = {}) {
+window.NodeList&&!NodeList.prototype.forEach&&(NodeList.prototype.forEach=function(o,t){t=t||window;for(var i=0;i<this.length;i++)o.call(t,this[i],i,this);});
+
+/**
+ * LazyScripts
+ * a lazy loader for your javascripts
+ * @param {Object} customOptions - define your lazy-script-data selectors
+ */
+function lazyScripts(customOptions = {}) {
   const options = {
     lazyScriptSelector: '[data-lazy-script]',
     lazyScriptsSelector: '[data-lazy-scripts]',
@@ -14,16 +21,22 @@ function lazyScripts (customOptions = {}) {
   let lazyScriptsDataName = '';
 
   const loadedScripts = [];
-  const lazyScripts = document.querySelectorAll(`${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`);
+  const lazyScripts = document.querySelectorAll(
+      `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
+  );
 
   /**
-   * convert the `querySelectorAll` compatible class options of lazySelectors and
-   * return a string, you can use in `dataset[string]`
+   * convert the `querySelectorAll` compatible class options of lazySelectors
+   * and return a string, you can use in `dataset[string]`
    * @see https://stackoverflow.com/a/6661012
    * @param {String} string - the text you want to convert
+   * @return {String}
    */
   function hyphensToCamelCase(string) {
-    return string.replace('[data-', '').replace(']', '').replace(/-([a-z])/g, g => g[1].toUpperCase());
+    return string
+        .replace('[data-', '').
+        replace(']', '').
+        replace(/-([a-z])/g, (g) => g[1].toUpperCase());
   }
 
   /**
@@ -65,7 +78,8 @@ function lazyScripts (customOptions = {}) {
    * callback from fallback or intersectionObserver method,
    * to process both data attributes from given element and
    * load its scripts
-   * @param {HTMLElement} lazyElement - the element which entered the viewport and will be processed
+   * @param {HTMLElement} lazyElement - the element which entered
+   *    the viewport and will be processed
    */
   function processElement(lazyElement) {
     // process single script data attribute
@@ -73,8 +87,10 @@ function lazyScripts (customOptions = {}) {
       loadScript([lazyElement.dataset[lazyScriptDataName]], lazyElement);
     }
 
-    const scripts = JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]');
-    loadScript(scripts, lazyElement);
+    loadScript(
+        JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]'),
+        lazyElement
+    );
   }
 
   /**
@@ -82,7 +98,7 @@ function lazyScripts (customOptions = {}) {
    * all scripts are gonna be loaded in a batch
    */
   function fallbackScriptLoad() {
-    lazyScripts.forEach(lazyScript => processElement(lazyScript));
+    lazyScripts.forEach((lazyScript) => processElement(lazyScript));
   }
 
   /**
@@ -121,8 +137,8 @@ function lazyScripts (customOptions = {}) {
     }
 
     const io = new IntersectionObserver(
-      (entries, observer) => intersectionCallback(entries, observer),
-      options.intersectionObserverOptions,
+        (entries, observer) => intersectionCallback(entries, observer),
+        options.intersectionObserverOptions,
     );
 
     lazyScripts.forEach((lazyScript) => {

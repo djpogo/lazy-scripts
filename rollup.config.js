@@ -1,6 +1,8 @@
 import babel from 'rollup-plugin-babel';
+import resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
 import filesize from 'rollup-plugin-filesize';
-import { uglify } from 'rollup-plugin-uglify';
+import {uglify} from 'rollup-plugin-uglify';
 import license from 'rollup-plugin-license';
 import pkg from './package.json';
 
@@ -14,6 +16,12 @@ export default [
       format: 'umd',
     },
     plugins: [
+      resolve({
+        browser: true,
+      }),
+      commonjs({
+        include: 'node_modules/**',
+      }),
       license({
         banner:
           '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
@@ -44,6 +52,12 @@ export default [
       format: 'umd',
     },
     plugins: [
+      resolve({
+        browser: true,
+      }),
+      commonjs({
+        include: 'node_modules/**',
+      }),
       license({
         banner:
           '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
@@ -85,6 +99,12 @@ export default [
       { file: pkg.module, format: 'es' },
     ],
     plugins: [
+      resolve({
+        browser: true,
+      }),
+      commonjs({
+        include: 'node_modules/**',
+      }),
       license({
         banner:
           '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +

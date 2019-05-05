@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.0.1 - 2019-05-04
+/*! LazyScripts - v0.0.1 - 2019-05-05
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -43,6 +43,20 @@
     return target;
   }
 
+  window.NodeList && !NodeList.prototype.forEach && (NodeList.prototype.forEach = function (o, t) {
+    t = t || window;
+
+    for (var i = 0; i < this.length; i++) {
+      o.call(t, this[i], i, this);
+    }
+  });
+
+  /**
+   * LazyScripts
+   * a lazy loader for your javascripts
+   * @param {Object} customOptions - define your lazy-script-data selectors
+   */
+
   function lazyScripts () {
     var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -56,10 +70,11 @@
     var loadedScripts = [];
     var lazyScripts = document.querySelectorAll("".concat(options.lazyScriptSelector, ", ").concat(options.lazyScriptsSelector));
     /**
-     * convert the `querySelectorAll` compatible class options of lazySelectors and
-     * return a string, you can use in `dataset[string]`
+     * convert the `querySelectorAll` compatible class options of lazySelectors
+     * and return a string, you can use in `dataset[string]`
      * @see https://stackoverflow.com/a/6661012
      * @param {String} string - the text you want to convert
+     * @return {String}
      */
 
     function hyphensToCamelCase(string) {
@@ -111,7 +126,8 @@
      * callback from fallback or intersectionObserver method,
      * to process both data attributes from given element and
      * load its scripts
-     * @param {HTMLElement} lazyElement - the element which entered the viewport and will be processed
+     * @param {HTMLElement} lazyElement - the element which entered
+     *    the viewport and will be processed
      */
 
 
@@ -121,8 +137,7 @@
         loadScript([lazyElement.dataset[lazyScriptDataName]], lazyElement);
       }
 
-      var scripts = JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]');
-      loadScript(scripts, lazyElement);
+      loadScript(JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]'), lazyElement);
     }
     /**
      * if no IntersectionObserver (and no polyfill) is found,

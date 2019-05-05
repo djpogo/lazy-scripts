@@ -1,4 +1,11 @@
-export default function (customOptions = {}) {
+import 'mdn-polyfills/NodeList.prototype.forEach';
+
+/**
+ * LazyScripts
+ * a lazy loader for your javascripts
+ * @param {Object} customOptions - define your lazy-script-data selectors
+ */
+export default function(customOptions = {}) {
   const options = {
     lazyScriptSelector: '[data-lazy-script]',
     lazyScriptsSelector: '[data-lazy-scripts]',
@@ -9,16 +16,22 @@ export default function (customOptions = {}) {
   let lazyScriptsDataName = '';
 
   const loadedScripts = [];
-  const lazyScripts = document.querySelectorAll(`${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`);
+  const lazyScripts = document.querySelectorAll(
+      `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
+  );
 
   /**
-   * convert the `querySelectorAll` compatible class options of lazySelectors and
-   * return a string, you can use in `dataset[string]`
+   * convert the `querySelectorAll` compatible class options of lazySelectors
+   * and return a string, you can use in `dataset[string]`
    * @see https://stackoverflow.com/a/6661012
    * @param {String} string - the text you want to convert
+   * @return {String}
    */
   function hyphensToCamelCase(string) {
-    return string.replace('[data-', '').replace(']', '').replace(/-([a-z])/g, g => g[1].toUpperCase());
+    return string
+        .replace('[data-', '').
+        replace(']', '').
+        replace(/-([a-z])/g, (g) => g[1].toUpperCase());
   }
 
   /**
@@ -60,7 +73,8 @@ export default function (customOptions = {}) {
    * callback from fallback or intersectionObserver method,
    * to process both data attributes from given element and
    * load its scripts
-   * @param {HTMLElement} lazyElement - the element which entered the viewport and will be processed
+   * @param {HTMLElement} lazyElement - the element which entered
+   *    the viewport and will be processed
    */
   function processElement(lazyElement) {
     // process single script data attribute
@@ -68,8 +82,10 @@ export default function (customOptions = {}) {
       loadScript([lazyElement.dataset[lazyScriptDataName]], lazyElement);
     }
 
-    const scripts = JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]');
-    loadScript(scripts, lazyElement);
+    loadScript(
+        JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]'),
+        lazyElement
+    );
   }
 
   /**
@@ -77,7 +93,7 @@ export default function (customOptions = {}) {
    * all scripts are gonna be loaded in a batch
    */
   function fallbackScriptLoad() {
-    lazyScripts.forEach(lazyScript => processElement(lazyScript));
+    lazyScripts.forEach((lazyScript) => processElement(lazyScript));
   }
 
   /**
@@ -116,8 +132,8 @@ export default function (customOptions = {}) {
     }
 
     const io = new IntersectionObserver(
-      (entries, observer) => intersectionCallback(entries, observer),
-      options.intersectionObserverOptions,
+        (entries, observer) => intersectionCallback(entries, observer),
+        options.intersectionObserverOptions,
     );
 
     lazyScripts.forEach((lazyScript) => {
