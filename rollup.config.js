@@ -11,7 +11,7 @@ export default [
   {
     input: 'src/lazy-scripts.js',
     output: {
-      name: pkg.name,
+      name: pkg.scriptname,
       file: pkg.main,
       format: 'umd',
     },
@@ -24,7 +24,7 @@ export default [
       }),
       license({
         banner:
-          '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
+          '/*! <%= pkg.scriptname || pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
           '<%= moment().format("YYYY-MM-DD") + "\\n" %>' +
           '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
           '* Copyright (c) <%= moment().format("YYYY") %> <%= pkg.author.name %>;' +
@@ -47,7 +47,7 @@ export default [
   {
     input: 'src/lazy-scripts.js',
     output: {
-      name: 'pkg.name',
+      name: pkg.scriptname,
       file: pkg.browser,
       format: 'umd',
     },
@@ -60,7 +60,7 @@ export default [
       }),
       license({
         banner:
-          '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
+          '/*! <%= pkg.scriptname || pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
           '<%= moment().format("YYYY-MM-DD") + "\\n" %>' +
           '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
           '* Copyright (c) <%= moment().format("YYYY") %> <%= pkg.author.name %>;' +
@@ -79,7 +79,7 @@ export default [
       }),
       uglify({
         output: {
-          comments: true,
+          comments: false,
         },
       }),
       filesize(),
@@ -95,8 +95,7 @@ export default [
   {
     input: 'src/lazy-scripts.js',
     output: [
-      // { file: pkg.main, format: 'cjs' },
-      { file: pkg.module, format: 'es' },
+      {file: pkg.module, format: 'es'},
     ],
     plugins: [
       resolve({
@@ -107,7 +106,7 @@ export default [
       }),
       license({
         banner:
-          '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
+          '/*! <%= pkg.scriptname || pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
           '<%= moment().format("YYYY-MM-DD") + "\\n" %>' +
           '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
           '* Copyright (c) <%= moment().format("YYYY") %> <%= pkg.author.name %>;' +

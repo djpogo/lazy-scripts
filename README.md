@@ -3,8 +3,7 @@ Like you do with lazy loaded images, lazy load, parse and execute your js.
 
 ## Quick Start
 
-Include `lazy-scripts.min.js` somewhere in your page, and call `new LazyScripts();` at the end of your page, 
-or whenever your page is loaded.
+Include `lazy-scripts.min.js` somewhere in your page, and call `new LazyScripts();` at the end of your page, or whenever your page is loaded.
 
 Add one of the following `data-`-attributes to your markup:
 
@@ -54,12 +53,12 @@ by default the scripts will query your DOM for `data-lazy-script` for a single j
 
 ## Script Adjustments
 
-If your script(s) wait for a `DOMContentLoaded` or `window.load` you
-need to change that. These Events will be long forgotten when your scripts will be loaded, parsed and executed.
+If your script(s) wait for a `DOMContentLoaded` or `window.load` you need to change that. These Events will be long forgotten when your scripts will be loaded, parsed and executed.
 
-If you use Custom Events, this should be not a problem, the script
-is embedded in your page and will catch every event you fire.
+If you use Custom Events, this should be not a problem, the script is embedded in your page and will catch every event you fire.
 
 ## Browser Support
 
 lazy-scripts is a plain js library. It utilises IntersectionObserver but when no IntersectionObserver is found it will load all scripts directly. Your choice to include a IntersectionObserver polyfill or not.
+
+For IE11 [mdn-polyfills/NodeList.prototype.forEach](https://www.npmjs.com/package/mdn-polyfills) is included, so you can use umd minified source out of the box.

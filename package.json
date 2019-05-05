@@ -1,6 +1,7 @@
 {
-  "name": "LazyScripts",
+  "name": "lazy-scripts",
   "description": "load, parse and execute scripts when needed",
+  "scriptname": "LazyScripts",
   "version": "0.1.0",
   "keywords": [
     "lazy-loading",
