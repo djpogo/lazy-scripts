@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.0.1 - 2019-05-05
+/*! LazyScripts - v0.1.0 - 2019-05-05
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
