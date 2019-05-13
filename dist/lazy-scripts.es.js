@@ -1,9 +1,52 @@
-/*! LazyScripts - v0.2.0 - 2019-05-05
+/*! LazyScripts - v0.2.1 - 2019-05-13
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
 
 window.NodeList&&!NodeList.prototype.forEach&&(NodeList.prototype.forEach=function(o,t){t=t||window;for(var i=0;i<this.length;i++)o.call(t,this[i],i,this);});
+
+/**
+ * ScriptQueue object
+ * array _like_ syntax object to store javascript queue data
+ */
+class ScriptQueue {
+
+  /**
+   * constructor, initialize data objects
+   * @param {Function} pushCallback - function to be called after every push
+   */
+  constructor(pushCallback = null) {
+    this.queue = [];
+    this.callback = pushCallback;
+  }
+
+  /**
+   * Add data to the stack
+   * @param {Array} data - new array content to get appended to the queue
+   */
+  push(data) {
+    this.queue = [...this.queue, ...data];
+    if (this.callback) {
+      this.callback(this.queue);
+    }
+  }
+
+  /**
+   * return first object of queue
+   * @return {String}
+   */
+  shift() {
+    return this.queue.shift();
+  }
+
+  /**
+   * return length of queue
+   * @return {Number}
+   */
+  length() {
+    return this.queue.length;
+  }
+}
 
 /**
  * LazyScripts
@@ -19,11 +62,14 @@ function lazyScripts(customOptions = {}) {
 
   let lazyScriptDataName = '';
   let lazyScriptsDataName = '';
+  let scriptQueue;
+  let loadingScript = false;
 
   const loadedScripts = [];
   const lazyScripts = document.querySelectorAll(
       `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
   );
+
 
   /**
    * convert the `querySelectorAll` compatible class options of lazySelectors
@@ -53,24 +99,30 @@ function lazyScripts(customOptions = {}) {
   /**
    * create a `<script>` element, add type, defer and src attribute
    * and append it into the lazyElement
-   * @param {Array} scriptsSrc - Array with full paths to js files
-   * @param {HTMLElement} element - element the script will be append to
    */
-  function loadScript(scriptsSrc, element) {
-    const scriptSrc = scriptsSrc.shift();
+  function loadScript() {
+    if (loadingScript) {
+      return;
+    }
+    const scriptSrc = scriptQueue.shift();
+    if (!scriptSrc) {
+      return;
+    }
     if (scriptSrc && loadedScripts.indexOf(scriptSrc) === -1) {
       const script = document.createElement('script');
-      loadedScripts.push(scriptSrc);
       script.type = 'text/javascript';
       script.src = scriptSrc;
-      if (scriptsSrc.length > 0) {
-        script.onload = () => {
-          loadScript(scriptsSrc, element);
-        };
+      loadingScript = true;
+      script.onload = () => {
+        loadingScript = false;
+        loadedScripts.push(scriptSrc);
+        loadScript();
+      };
+      document.body.appendChild(script);
+    } else {
+      if (scriptQueue.length() > 0) {
+        loadScript();
       }
-      element.appendChild(script);
-    } else if (scriptsSrc.length > 0) {
-      loadScript(scriptsSrc, element);
     }
   }
 
@@ -84,12 +136,11 @@ function lazyScripts(customOptions = {}) {
   function processElement(lazyElement) {
     // process single script data attribute
     if (lazyElement.dataset[lazyScriptDataName]) {
-      loadScript([lazyElement.dataset[lazyScriptDataName]], lazyElement);
+      scriptQueue.push([lazyElement.dataset[lazyScriptDataName]]);
     }
 
-    loadScript(
-        JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]'),
-        lazyElement
+    scriptQueue.push(
+        JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]')
     );
   }
 
@@ -125,6 +176,7 @@ function lazyScripts(customOptions = {}) {
    */
   function setup() {
     initLoadedScripts();
+    scriptQueue = new ScriptQueue(loadScript);
     lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
     lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
     if (!window.IntersectionObserver) {

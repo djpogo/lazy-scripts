@@ -1,5 +1,5 @@
 import 'mdn-polyfills/NodeList.prototype.forEach';
-
+import ScriptQueue from './script-queue';
 /**
  * LazyScripts
  * a lazy loader for your javascripts
@@ -14,11 +14,14 @@ export default function(customOptions = {}) {
 
   let lazyScriptDataName = '';
   let lazyScriptsDataName = '';
+  let scriptQueue;
+  let loadingScript = false;
 
   const loadedScripts = [];
   const lazyScripts = document.querySelectorAll(
       `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
   );
+
 
   /**
    * convert the `querySelectorAll` compatible class options of lazySelectors
@@ -48,24 +51,30 @@ export default function(customOptions = {}) {
   /**
    * create a `<script>` element, add type, defer and src attribute
    * and append it into the lazyElement
-   * @param {Array} scriptsSrc - Array with full paths to js files
-   * @param {HTMLElement} element - element the script will be append to
    */
-  function loadScript(scriptsSrc, element) {
-    const scriptSrc = scriptsSrc.shift();
+  function loadScript() {
+    if (loadingScript) {
+      return;
+    }
+    const scriptSrc = scriptQueue.shift();
+    if (!scriptSrc) {
+      return;
+    }
     if (scriptSrc && loadedScripts.indexOf(scriptSrc) === -1) {
       const script = document.createElement('script');
-      loadedScripts.push(scriptSrc);
       script.type = 'text/javascript';
       script.src = scriptSrc;
-      if (scriptsSrc.length > 0) {
-        script.onload = () => {
-          loadScript(scriptsSrc, element);
-        };
+      loadingScript = true;
+      script.onload = () => {
+        loadingScript = false;
+        loadedScripts.push(scriptSrc);
+        loadScript();
       }
-      element.appendChild(script);
-    } else if (scriptsSrc.length > 0) {
-      loadScript(scriptsSrc, element);
+      document.body.appendChild(script);
+    } else {
+      if (scriptQueue.length() > 0) {
+        loadScript();
+      }
     }
   }
 
@@ -79,12 +88,11 @@ export default function(customOptions = {}) {
   function processElement(lazyElement) {
     // process single script data attribute
     if (lazyElement.dataset[lazyScriptDataName]) {
-      loadScript([lazyElement.dataset[lazyScriptDataName]], lazyElement);
+      scriptQueue.push([lazyElement.dataset[lazyScriptDataName]]);
     }
 
-    loadScript(
-        JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]'),
-        lazyElement
+    scriptQueue.push(
+        JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]')
     );
   }
 
@@ -120,6 +128,7 @@ export default function(customOptions = {}) {
    */
   function setup() {
     initLoadedScripts();
+    scriptQueue = new ScriptQueue(loadScript);
     lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
     lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
     if (!window.IntersectionObserver) {

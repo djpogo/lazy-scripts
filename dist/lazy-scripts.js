@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.2.0 - 2019-05-05
+/*! LazyScripts - v0.2.1 - 2019-05-13
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -8,6 +8,28 @@
   typeof define === 'function' && define.amd ? define(factory) :
   (global = global || self, global.LazyScripts = factory());
 }(this, function () { 'use strict';
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
 
   function _defineProperty(obj, key, value) {
     if (key in obj) {
@@ -43,6 +65,26 @@
     return target;
   }
 
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+      return arr2;
+    }
+  }
+
+  function _iterableToArray(iter) {
+    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance");
+  }
+
   window.NodeList && !NodeList.prototype.forEach && (NodeList.prototype.forEach = function (o, t) {
     t = t || window;
 
@@ -50,6 +92,65 @@
       o.call(t, this[i], i, this);
     }
   });
+
+  /**
+   * ScriptQueue object
+   * array _like_ syntax object to store javascript queue data
+   */
+  var _default =
+  /*#__PURE__*/
+  function () {
+    /**
+     * constructor, initialize data objects
+     * @param {Function} pushCallback - function to be called after every push
+     */
+    function _default() {
+      var pushCallback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+      _classCallCheck(this, _default);
+
+      this.queue = [];
+      this.callback = pushCallback;
+    }
+    /**
+     * Add data to the stack
+     * @param {Array} data - new array content to get appended to the queue
+     */
+
+
+    _createClass(_default, [{
+      key: "push",
+      value: function push(data) {
+        this.queue = [].concat(_toConsumableArray(this.queue), _toConsumableArray(data));
+
+        if (this.callback) {
+          this.callback(this.queue);
+        }
+      }
+      /**
+       * return first object of queue
+       * @return {String}
+       */
+
+    }, {
+      key: "shift",
+      value: function shift() {
+        return this.queue.shift();
+      }
+      /**
+       * return length of queue
+       * @return {Number}
+       */
+
+    }, {
+      key: "length",
+      value: function length() {
+        return this.queue.length;
+      }
+    }]);
+
+    return _default;
+  }();
 
   /**
    * LazyScripts
@@ -67,6 +168,8 @@
 
     var lazyScriptDataName = '';
     var lazyScriptsDataName = '';
+    var scriptQueue;
+    var loadingScript = false;
     var loadedScripts = [];
     var lazyScripts = document.querySelectorAll("".concat(options.lazyScriptSelector, ", ").concat(options.lazyScriptsSelector));
     /**
@@ -97,29 +200,37 @@
     /**
      * create a `<script>` element, add type, defer and src attribute
      * and append it into the lazyElement
-     * @param {Array} scriptsSrc - Array with full paths to js files
-     * @param {HTMLElement} element - element the script will be append to
      */
 
 
-    function loadScript(scriptsSrc, element) {
-      var scriptSrc = scriptsSrc.shift();
+    function loadScript() {
+      if (loadingScript) {
+        return;
+      }
+
+      var scriptSrc = scriptQueue.shift();
+
+      if (!scriptSrc) {
+        return;
+      }
 
       if (scriptSrc && loadedScripts.indexOf(scriptSrc) === -1) {
         var script = document.createElement('script');
-        loadedScripts.push(scriptSrc);
         script.type = 'text/javascript';
         script.src = scriptSrc;
+        loadingScript = true;
 
-        if (scriptsSrc.length > 0) {
-          script.onload = function () {
-            loadScript(scriptsSrc, element);
-          };
+        script.onload = function () {
+          loadingScript = false;
+          loadedScripts.push(scriptSrc);
+          loadScript();
+        };
+
+        document.body.appendChild(script);
+      } else {
+        if (scriptQueue.length() > 0) {
+          loadScript();
         }
-
-        element.appendChild(script);
-      } else if (scriptsSrc.length > 0) {
-        loadScript(scriptsSrc, element);
       }
     }
     /**
@@ -134,10 +245,10 @@
     function processElement(lazyElement) {
       // process single script data attribute
       if (lazyElement.dataset[lazyScriptDataName]) {
-        loadScript([lazyElement.dataset[lazyScriptDataName]], lazyElement);
+        scriptQueue.push([lazyElement.dataset[lazyScriptDataName]]);
       }
 
-      loadScript(JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]'), lazyElement);
+      scriptQueue.push(JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]'));
     }
     /**
      * if no IntersectionObserver (and no polyfill) is found,
@@ -177,6 +288,7 @@
 
     function setup() {
       initLoadedScripts();
+      scriptQueue = new _default(loadScript);
       lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
       lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
 

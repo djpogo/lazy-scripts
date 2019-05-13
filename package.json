@@ -2,7 +2,7 @@
   "name": "lazy-scripts",
   "description": "load, parse and execute scripts when needed",
   "scriptname": "LazyScripts",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "keywords": [
     "lazy-loading",
     "javascript"
@@ -45,7 +45,8 @@
     "lint": "eslint ./src/*.js",
     "prepublish": "npm run clean && npm run build",
     "precommit": "npm run lint && npm run build",
-    "tag": "npm version minor --no-git-tag-version && npm run build && PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && git commit -am \"$PACKAGE_VERSION release\" && git tag v$PACKAGE_VERSION"
+    "tag": "npm version minor --no-git-tag-version && npm run build && PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && git commit -am \"$PACKAGE_VERSION release\" && git tag v$PACKAGE_VERSION",
+    "patchTag": "npm version patch --no-git-tag-version && npm run build && PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]') && git commit -am \"$PACKAGE_VERSION release\" && git tag v$PACKAGE_VERSION"
   },
   "repository": {
     "type": "git",
