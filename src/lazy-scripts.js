@@ -1,4 +1,5 @@
 import 'mdn-polyfills/NodeList.prototype.forEach';
+import 'mdn-polyfills/CustomEvent';
 import ScriptQueue from './script-queue';
 /**
  * LazyScripts
@@ -69,6 +70,11 @@ export default function(customOptions = {}) {
         loadingScript = false;
         loadedScripts.push(scriptSrc);
         loadScript();
+        const event = new CustomEvent(
+            'lazyScriptLoaded',
+            {detail: {scriptSrc}}
+        );
+        document.body.dispatchEvent(event);
       }
       document.body.appendChild(script);
     } else {

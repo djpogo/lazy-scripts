@@ -1,9 +1,11 @@
-/*! LazyScripts - v0.2.1 - 2019-05-13
+/*! LazyScripts - v0.2.1 - 2019-05-14
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
 
 window.NodeList&&!NodeList.prototype.forEach&&(NodeList.prototype.forEach=function(o,t){t=t||window;for(var i=0;i<this.length;i++)o.call(t,this[i],i,this);});
+
+!function(){function t(t,e){e=e||{bubbles:!1,cancelable:!1,detail:void 0};var n=document.createEvent("CustomEvent");return n.initCustomEvent(t,e.bubbles,e.cancelable,e.detail),n}"function"!=typeof window.CustomEvent&&(t.prototype=window.Event.prototype,window.CustomEvent=t);}();
 
 /**
  * ScriptQueue object
@@ -117,6 +119,11 @@ function lazyScripts(customOptions = {}) {
         loadingScript = false;
         loadedScripts.push(scriptSrc);
         loadScript();
+        const event = new CustomEvent(
+            'lazyScriptLoaded',
+            {detail: {scriptSrc}}
+        );
+        document.body.dispatchEvent(event);
       };
       document.body.appendChild(script);
     } else {

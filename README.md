@@ -50,6 +50,19 @@ The constructor call `new LazyScripts()` supports an option object like this:
 
 by default the scripts will query your DOM for `data-lazy-script` for a single js file, and `data-lazy-scripts` for array notated scripts, load, parsed and executed in array order.
 
+## CustomEvents (since 0.2.2)
+
+LazyScripts fires on every successful loaded script a `lazyScriptLoaded` CustomEvent on the `body` element, you can catch and do something with it.
+
+```
+  …
+  function lazyCallback(event) {
+    console.log(event.detail.scriptSrc); // path of actual added script
+  }
+
+  document.body.addEventListener('lazyScriptLoaded', lazyCallback);
+  …
+```
 
 ## Script Adjustments
 
@@ -62,3 +75,5 @@ If you use Custom Events, this should be not a problem, the script is embedded i
 lazy-scripts is a plain js library. It utilises IntersectionObserver but when no IntersectionObserver is found it will load all scripts directly. Your choice to include a IntersectionObserver polyfill or not.
 
 For IE11 [mdn-polyfills/NodeList.prototype.forEach](https://www.npmjs.com/package/mdn-polyfills) is included, so you can use umd minified source out of the box.
+
+With `0.2.2` [mdn-polyfills/CustomEvent](https://www.npmjs.com/package/mdn-polyfills) is added.
