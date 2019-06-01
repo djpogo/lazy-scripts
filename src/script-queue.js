@@ -3,7 +3,6 @@
  * array _like_ syntax object to store javascript queue data
  */
 export default class {
-
   /**
    * constructor, initialize data objects
    * @param {Function} pushCallback - function to be called after every push

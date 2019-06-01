@@ -75,7 +75,7 @@ export default function(customOptions = {}) {
             {detail: {scriptSrc}}
         );
         document.body.dispatchEvent(event);
-      }
+      };
       document.body.appendChild(script);
     } else {
       if (scriptQueue.length() > 0) {
