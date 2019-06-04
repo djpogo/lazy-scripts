@@ -10,18 +10,28 @@ export default function(customOptions = {}) {
   const options = {
     lazyScriptSelector: '[data-lazy-script]',
     lazyScriptsSelector: '[data-lazy-scripts]',
+    lazyScriptDoneSelector: '[data-lazy-script-done]',
+    lazyScriptLoadedEventName: 'lazyScriptLoaded',
+    mutationObserverOptions: {
+      attributes: false,
+      childList: true,
+      subTree: true,
+    },
     ...customOptions,
   };
 
   let lazyScriptDataName = '';
   let lazyScriptsDataName = '';
+  let lazyScriptDoneName = '';
   let scriptQueue;
   let loadingScript = false;
 
+  const lazyScriptSelector = 
+      `${options.lazyScriptSelector}:not(${options.lazyScriptDoneSelector}),
+      ${options.lazyScriptsSelector}:not(${options.lazyScriptDoneSelector})`;
+
   const loadedScripts = [];
-  const lazyScripts = document.querySelectorAll(
-      `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
-  );
+  const lazyScripts = document.querySelectorAll(lazyScriptSelector);
 
 
   /**
@@ -71,7 +81,7 @@ export default function(customOptions = {}) {
         loadedScripts.push(scriptSrc);
         loadScript();
         const event = new CustomEvent(
-            'lazyScriptLoaded',
+            options.lazyScriptLoadedEventName,
             {detail: {scriptSrc}}
         );
         document.body.dispatchEvent(event);
@@ -122,9 +132,31 @@ export default function(customOptions = {}) {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         processElement(entry.target);
+        entry.target.dataset[lazyScriptDoneName] = true;
         observer.unobserve(entry.target);
       }
     });
+  }
+
+  /**
+   * callback from MutationObserver of document.body element
+   * reinitialize intersectionObserver if an element is added
+   * @param {Array<MutationRecord>} mutationsList
+   * @param {MutationObserver} observer
+   */
+  function mutationCallback(mutationsList, observer) {
+    /*mutationsList.forEach((mutation) => {
+      mutation.addedNodes.forEach((fragment) => {
+        if (
+          fragment.dataset[lazyScriptDataName]
+          || fragment.dataset[lazyScriptsDataName]
+          || fragment.querySelectorAll(
+              `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
+          )) {
+
+        }
+      });
+    });*/
   }
 
   /**
@@ -137,6 +169,39 @@ export default function(customOptions = {}) {
     scriptQueue = new ScriptQueue(loadScript);
     lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
     lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
+    lazyScriptDoneName = hyphensToCamelCase(options.lazyScriptDoneSelector);
+
+    setupIntersectionObserver();
+    setupMutationObserver();
+  }
+
+  /**
+   * check existance of MutationObserver
+   * and setup MutationObserver
+   */
+  function setupMutationObserver() {
+    if (!window.MutationObserver) {
+      // eslint-disable-next-line no-console
+      console.info(
+          'MutationObserver not available.',
+          'DOM manipulations will not be recognised'
+      );
+    }
+
+    const mo = new MutationObserver(
+        (mutationsList, observer) => mutationCallback(mutationsList, observer)
+    );
+    mo.observe(
+        document.body,
+        options.mutationObserverOptions
+    );
+  }
+
+  /**
+   * check existance of IntersectionObserver
+   * and setup IntersectionObserver
+   */
+  function setupIntersectionObserver() {
     if (!window.IntersectionObserver) {
       if (!window.requestAnimationFrame) {
         fallbackScriptLoad();
