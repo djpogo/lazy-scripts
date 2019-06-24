@@ -1,23 +1,20 @@
-/*! LazyScripts - v0.2.2 - 2019-05-14
+/*! LazyScripts - v0.2.3 - 2019-06-24
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
 
 window.NodeList&&!NodeList.prototype.forEach&&(NodeList.prototype.forEach=function(o,t){t=t||window;for(var i=0;i<this.length;i++)o.call(t,this[i],i,this);});
 
-!function(){function t(t,e){e=e||{bubbles:!1,cancelable:!1,detail:void 0};var n=document.createEvent("CustomEvent");return n.initCustomEvent(t,e.bubbles,e.cancelable,e.detail),n}"function"!=typeof window.CustomEvent&&(t.prototype=window.Event.prototype,window.CustomEvent=t);}();
-
 /**
  * ScriptQueue object
  * array _like_ syntax object to store javascript queue data
  */
 class ScriptQueue {
-
   /**
    * constructor, initialize data objects
    * @param {Function} pushCallback - function to be called after every push
    */
-  constructor(pushCallback = null) {
+  constructor(pushCallback = undefined) {
     this.queue = [];
     this.callback = pushCallback;
   }
@@ -57,17 +54,26 @@ class ScriptQueue {
  */
 function lazyScripts(customOptions = {}) {
   const options = {
+    lazyScriptsInitialized: 'lsi',
     lazyScriptSelector: '[data-lazy-script]',
     lazyScriptsSelector: '[data-lazy-scripts]',
     ...customOptions,
   };
+
+  const html = document.documentElement;
+
+  if (html.dataset[options.lazyScriptsInitialized] === 'true') {
+    // eslint-disable-next-line no-console
+    console.info('🛈 LazyScripts already initialized');
+    return;
+  }
 
   let lazyScriptDataName = '';
   let lazyScriptsDataName = '';
   let scriptQueue;
   let loadingScript = false;
 
-  const loadedScripts = [];
+  const loadedScripts = {};
   const lazyScripts = document.querySelectorAll(
       `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
   );
@@ -94,7 +100,9 @@ function lazyScripts(customOptions = {}) {
    */
   function initLoadedScripts() {
     document.querySelectorAll('script').forEach((script) => {
-      loadedScripts.push(script.src);
+      if (script.src && script.src !== '') {
+        loadedScripts[script.src] = true;
+      }
     });
   }
 
@@ -110,25 +118,35 @@ function lazyScripts(customOptions = {}) {
     if (!scriptSrc) {
       return;
     }
-    if (scriptSrc && loadedScripts.indexOf(scriptSrc) === -1) {
+    if (scriptSrc && !loadedScripts[scriptSrc]) {
       const script = document.createElement('script');
       script.type = 'text/javascript';
       script.src = scriptSrc;
       loadingScript = true;
+      script.dataset.lazyScript = true;
+      loadedScripts[scriptSrc] = true;
       script.onload = () => {
         loadingScript = false;
-        loadedScripts.push(scriptSrc);
         loadScript();
-        const event = new CustomEvent(
-            'lazyScriptLoaded',
-            {detail: {scriptSrc}}
-        );
-        document.body.dispatchEvent(event);
+        if (window.CustomEvent) {
+          const event = new CustomEvent(
+              'lazyScriptLoaded',
+              {detail: {scriptSrc}}
+          );
+          document.body.dispatchEvent(event);
+        }
+      };
+      script.onerror = () => {
+        loadingScript = false;
+        loadedScripts[scriptSrc] = false;
+        loadScript();
       };
       document.body.appendChild(script);
     } else {
       if (scriptQueue.length() > 0) {
-        loadScript();
+        window.setTimeout(() => {
+          loadScript();
+        });
       }
     }
   }
@@ -182,6 +200,7 @@ function lazyScripts(customOptions = {}) {
    * callback - if available
    */
   function setup() {
+    html.dataset[options.lazyScriptsInitialized] = true;
     initLoadedScripts();
     scriptQueue = new ScriptQueue(loadScript);
     lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);

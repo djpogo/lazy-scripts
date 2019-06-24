@@ -1,5 +1,4 @@
 import 'mdn-polyfills/NodeList.prototype.forEach';
-import 'mdn-polyfills/CustomEvent';
 import ScriptQueue from './script-queue';
 /**
  * LazyScripts
@@ -8,6 +7,7 @@ import ScriptQueue from './script-queue';
  */
 export default function(customOptions = {}) {
   const options = {
+    lazyScriptsInitialized: 'lsi',
     lazyScriptSelector: '[data-lazy-script]',
     lazyScriptsSelector: '[data-lazy-scripts]',
     lazyScriptDoneSelector: '[data-lazy-script-done]',
@@ -20,19 +20,26 @@ export default function(customOptions = {}) {
     ...customOptions,
   };
 
+  const html = document.documentElement;
+
+  if (html.dataset[options.lazyScriptsInitialized] === 'true') {
+    // eslint-disable-next-line no-console
+    console.info('🛈 LazyScripts already initialized');
+    return;
+  }
+
   let lazyScriptDataName = '';
   let lazyScriptsDataName = '';
   let lazyScriptDoneName = '';
   let scriptQueue;
   let loadingScript = false;
 
-  const lazyScriptSelector = 
+  const lazyScriptSelector =
       `${options.lazyScriptSelector}:not(${options.lazyScriptDoneSelector}),
       ${options.lazyScriptsSelector}:not(${options.lazyScriptDoneSelector})`;
 
-  const loadedScripts = [];
+  const loadedScripts = {};
   const lazyScripts = document.querySelectorAll(lazyScriptSelector);
-
 
   /**
    * convert the `querySelectorAll` compatible class options of lazySelectors
@@ -55,7 +62,9 @@ export default function(customOptions = {}) {
    */
   function initLoadedScripts() {
     document.querySelectorAll('script').forEach((script) => {
-      loadedScripts.push(script.src);
+      if (script.src && script.src !== '') {
+        loadedScripts[script.src] = true;
+      }
     });
   }
 
@@ -71,25 +80,35 @@ export default function(customOptions = {}) {
     if (!scriptSrc) {
       return;
     }
-    if (scriptSrc && loadedScripts.indexOf(scriptSrc) === -1) {
+    if (scriptSrc && !loadedScripts[scriptSrc]) {
       const script = document.createElement('script');
       script.type = 'text/javascript';
       script.src = scriptSrc;
       loadingScript = true;
+      script.dataset.lazyScript = true;
+      loadedScripts[scriptSrc] = true;
       script.onload = () => {
         loadingScript = false;
-        loadedScripts.push(scriptSrc);
         loadScript();
-        const event = new CustomEvent(
-            options.lazyScriptLoadedEventName,
-            {detail: {scriptSrc}}
-        );
-        document.body.dispatchEvent(event);
+        if (window.CustomEvent) {
+          const event = new CustomEvent(
+              options.lazyScriptLoadedEventName,
+              {detail: {scriptSrc}}
+          );
+          document.body.dispatchEvent(event);
+        }
+      };
+      script.onerror = () => {
+        loadingScript = false;
+        loadedScripts[scriptSrc] = false;
+        loadScript();
       };
       document.body.appendChild(script);
     } else {
       if (scriptQueue.length() > 0) {
-        loadScript();
+        window.setTimeout(() => {
+          loadScript();
+        });
       }
     }
   }
@@ -165,6 +184,7 @@ export default function(customOptions = {}) {
    * callback - if available
    */
   function setup() {
+    html.dataset[options.lazyScriptsInitialized] = true;
     initLoadedScripts();
     scriptQueue = new ScriptQueue(loadScript);
     lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);

@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.2.2 - 2019-05-14
+/*! LazyScripts - v0.2.3 - 2019-06-24
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -93,20 +93,6 @@
     }
   });
 
-  !function () {
-    function t(t, e) {
-      e = e || {
-        bubbles: !1,
-        cancelable: !1,
-        detail: void 0
-      };
-      var n = document.createEvent("CustomEvent");
-      return n.initCustomEvent(t, e.bubbles, e.cancelable, e.detail), n;
-    }
-
-    "function" != typeof window.CustomEvent && (t.prototype = window.Event.prototype, window.CustomEvent = t);
-  }();
-
   /**
    * ScriptQueue object
    * array _like_ syntax object to store javascript queue data
@@ -119,7 +105,7 @@
      * @param {Function} pushCallback - function to be called after every push
      */
     function _default() {
-      var pushCallback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var pushCallback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
 
       _classCallCheck(this, _default);
 
@@ -176,15 +162,24 @@
     var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     var options = _objectSpread({
+      lazyScriptsInitialized: 'lsi',
       lazyScriptSelector: '[data-lazy-script]',
       lazyScriptsSelector: '[data-lazy-scripts]'
     }, customOptions);
+
+    var html = document.documentElement;
+
+    if (html.dataset[options.lazyScriptsInitialized] === 'true') {
+      // eslint-disable-next-line no-console
+      console.info('🛈 LazyScripts already initialized');
+      return;
+    }
 
     var lazyScriptDataName = '';
     var lazyScriptsDataName = '';
     var scriptQueue;
     var loadingScript = false;
-    var loadedScripts = [];
+    var loadedScripts = {};
     var lazyScripts = document.querySelectorAll("".concat(options.lazyScriptSelector, ", ").concat(options.lazyScriptsSelector));
     /**
      * convert the `querySelectorAll` compatible class options of lazySelectors
@@ -208,7 +203,9 @@
 
     function initLoadedScripts() {
       document.querySelectorAll('script').forEach(function (script) {
-        loadedScripts.push(script.src);
+        if (script.src && script.src !== '') {
+          loadedScripts[script.src] = true;
+        }
       });
     }
     /**
@@ -228,28 +225,40 @@
         return;
       }
 
-      if (scriptSrc && loadedScripts.indexOf(scriptSrc) === -1) {
+      if (scriptSrc && !loadedScripts[scriptSrc]) {
         var script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = scriptSrc;
         loadingScript = true;
+        script.dataset.lazyScript = true;
+        loadedScripts[scriptSrc] = true;
 
         script.onload = function () {
           loadingScript = false;
-          loadedScripts.push(scriptSrc);
           loadScript();
-          var event = new CustomEvent('lazyScriptLoaded', {
-            detail: {
-              scriptSrc: scriptSrc
-            }
-          });
-          document.body.dispatchEvent(event);
+
+          if (window.CustomEvent) {
+            var event = new CustomEvent('lazyScriptLoaded', {
+              detail: {
+                scriptSrc: scriptSrc
+              }
+            });
+            document.body.dispatchEvent(event);
+          }
+        };
+
+        script.onerror = function () {
+          loadingScript = false;
+          loadedScripts[scriptSrc] = false;
+          loadScript();
         };
 
         document.body.appendChild(script);
       } else {
         if (scriptQueue.length() > 0) {
-          loadScript();
+          window.setTimeout(function () {
+            loadScript();
+          });
         }
       }
     }
@@ -307,6 +316,7 @@
 
 
     function setup() {
+      html.dataset[options.lazyScriptsInitialized] = true;
       initLoadedScripts();
       scriptQueue = new _default(loadScript);
       lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);

@@ -7,7 +7,7 @@ export default class {
    * constructor, initialize data objects
    * @param {Function} pushCallback - function to be called after every push
    */
-  constructor(pushCallback = null) {
+  constructor(pushCallback = undefined) {
     this.queue = [];
     this.callback = pushCallback;
   }
