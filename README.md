@@ -66,7 +66,7 @@ LazyScripts fires on every successful loaded script a `lazyScriptLoaded` CustomE
 
 ## CustomEvents (since 0.2.3)
 
-I removed the `CustomEvent` polyfill. CustomEvents are fired when the browser supports it, so if you need IE11 support and Custom Events, include the polyfill you trust most.
+I **de-include** the `CustomEvent` polyfill I added in `0.2.2`. LazyScripts still dispatches CustomEvents if your browser supports it. It is up to you to include (or no) the polyfill you like the most.
 
 ## Script Adjustments
 
@@ -81,3 +81,5 @@ lazy-scripts is a plain js library. It utilises IntersectionObserver but when no
 For IE11 [mdn-polyfills/NodeList.prototype.forEach](https://www.npmjs.com/package/mdn-polyfills) is included, so you can use umd minified source out of the box.
 
 With `0.2.2` [mdn-polyfills/CustomEvent](https://www.npmjs.com/package/mdn-polyfills) is added.
+
+With `0.2.3` CustomEvent polyfill was removed. Include it by yourself if you need it.
