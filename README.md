@@ -64,6 +64,10 @@ LazyScripts fires on every successful loaded script a `lazyScriptLoaded` CustomE
   …
 ```
 
+## CustomEvents (since 0.2.3)
+
+I removed the `CustomEvent` polyfill. CustomEvents are fired when the browser supports it, so if you need IE11 support and Custom Events, include the polyfill you trust most.
+
 ## Script Adjustments
 
 If your script(s) wait for a `DOMContentLoaded` or `window.load` you need to change that. These Events will be long forgotten when your scripts will be loaded, parsed and executed.
