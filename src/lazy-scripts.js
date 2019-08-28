@@ -5,7 +5,7 @@ import ScriptQueue from './script-queue';
  * a lazy loader for your javascripts
  * @param {Object} customOptions - define your lazy-script-data selectors
  */
-export default function(customOptions = {}) {
+export default function (customOptions = {}) {
   const options = {
     lazyScriptsInitialized: 'lsi',
     lazyScriptSelector: '[data-lazy-script]',
@@ -50,9 +50,9 @@ export default function(customOptions = {}) {
    */
   function hyphensToCamelCase(string) {
     return string
-        .replace('[data-', '').
-        replace(']', '').
-        replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+      .replace('[data-', '')
+      .replace(']', '')
+      .replace(/-([a-z])/g, (g) => g[1].toUpperCase());
   }
 
   /**
@@ -92,8 +92,8 @@ export default function(customOptions = {}) {
         loadScript();
         if (window.CustomEvent) {
           const event = new CustomEvent(
-              options.lazyScriptLoadedEventName,
-              {detail: {scriptSrc}}
+            options.lazyScriptLoadedEventName,
+            { detail: { scriptSrc } }
           );
           document.body.dispatchEvent(event);
         }
@@ -104,12 +104,12 @@ export default function(customOptions = {}) {
         loadScript();
       };
       document.body.appendChild(script);
-    } else {
-      if (scriptQueue.length() > 0) {
-        window.setTimeout(() => {
-          loadScript();
-        });
-      }
+      return;
+    }
+    if (scriptQueue.length() > 0) {
+      window.setTimeout(() => {
+        loadScript();
+      });
     }
   }
 
@@ -127,7 +127,7 @@ export default function(customOptions = {}) {
     }
 
     scriptQueue.push(
-        JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]')
+      JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]'),
     );
   }
 
@@ -148,11 +148,12 @@ export default function(customOptions = {}) {
    * @param {IntersectionObserver} observer - the IntersectionObserver itself
    */
   function intersectionCallback(entries, observer) {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        processElement(entry.target);
-        entry.target.dataset[lazyScriptDoneName] = true;
-        observer.unobserve(entry.target);
+    entries.forEach(({ isIntersecting, target }) => {
+      if (isIntersecting) {
+        processElement(target);
+        // eslint-disable-next-line no-param-reassign
+        target.dataset[lazyScriptDoneName] = true;
+        observer.unobserve(target);
       }
     });
   }
@@ -178,23 +179,7 @@ export default function(customOptions = {}) {
     });*/
   }
 
-  /**
-   * setup IntersectionObserver (if available)
-   * or start loading all scripts within a `requestAnimationFrame`
-   * callback - if available
-   */
-  function setup() {
-    html.dataset[options.lazyScriptsInitialized] = true;
-    initLoadedScripts();
-    scriptQueue = new ScriptQueue(loadScript);
-    lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
-    lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
-    lazyScriptDoneName = hyphensToCamelCase(options.lazyScriptDoneSelector);
-
-    setupIntersectionObserver();
-    setupMutationObserver();
-  }
-
+  
   /**
    * check existance of MutationObserver
    * and setup MutationObserver
@@ -203,17 +188,17 @@ export default function(customOptions = {}) {
     if (!window.MutationObserver) {
       // eslint-disable-next-line no-console
       console.info(
-          'MutationObserver not available.',
-          'DOM manipulations will not be recognised'
+        'MutationObserver not available.',
+        'DOM manipulations will not be recognised',
       );
     }
 
     const mo = new MutationObserver(
-        (mutationsList, observer) => mutationCallback(mutationsList, observer)
+      (mutationsList, observer) => mutationCallback(mutationsList, observer),
     );
     mo.observe(
-        document.body,
-        options.mutationObserverOptions
+      document.body,
+      options.mutationObserverOptions,
     );
   }
 
@@ -232,8 +217,8 @@ export default function(customOptions = {}) {
     }
 
     const io = new IntersectionObserver(
-        (entries, observer) => intersectionCallback(entries, observer),
-        options.intersectionObserverOptions,
+      (entries, observer) => intersectionCallback(entries, observer),
+      options.intersectionObserverOptions,
     );
 
     lazyScripts.forEach((lazyScript) => {
@@ -241,5 +226,21 @@ export default function(customOptions = {}) {
     });
   }
 
+  /**
+   * setup IntersectionObserver (if available)
+   * or start loading all scripts within a `requestAnimationFrame`
+   * callback - if available
+   */
+  function setup() {
+    html.dataset[options.lazyScriptsInitialized] = true;
+    initLoadedScripts();
+    scriptQueue = new ScriptQueue(loadScript);
+    lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
+    lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
+    lazyScriptDoneName = hyphensToCamelCase(options.lazyScriptDoneSelector);
+  
+    setupIntersectionObserver();
+    setupMutationObserver();
+  }
   setup();
 }
