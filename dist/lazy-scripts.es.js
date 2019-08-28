@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.2.3 - 2019-06-24
+/*! LazyScripts - v0.2.3 - 2019-08-28
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -52,7 +52,7 @@ class ScriptQueue {
  * a lazy loader for your javascripts
  * @param {Object} customOptions - define your lazy-script-data selectors
  */
-function lazyScripts(customOptions = {}) {
+function lazyScripts (customOptions = {}) {
   const options = {
     lazyScriptsInitialized: 'lsi',
     lazyScriptSelector: '[data-lazy-script]',
@@ -75,7 +75,7 @@ function lazyScripts(customOptions = {}) {
 
   const loadedScripts = {};
   const lazyScripts = document.querySelectorAll(
-      `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
+    `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`,
   );
 
 
@@ -88,9 +88,9 @@ function lazyScripts(customOptions = {}) {
    */
   function hyphensToCamelCase(string) {
     return string
-        .replace('[data-', '').
-        replace(']', '').
-        replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+      .replace('[data-', '')
+      .replace(']', '')
+      .replace(/-([a-z])/g, (g) => g[1].toUpperCase());
   }
 
   /**
@@ -130,8 +130,8 @@ function lazyScripts(customOptions = {}) {
         loadScript();
         if (window.CustomEvent) {
           const event = new CustomEvent(
-              'lazyScriptLoaded',
-              {detail: {scriptSrc}}
+            'lazyScriptLoaded',
+            { detail: { scriptSrc } },
           );
           document.body.dispatchEvent(event);
         }
@@ -142,12 +142,12 @@ function lazyScripts(customOptions = {}) {
         loadScript();
       };
       document.body.appendChild(script);
-    } else {
-      if (scriptQueue.length() > 0) {
-        window.setTimeout(() => {
-          loadScript();
-        });
-      }
+      return;
+    }
+    if (scriptQueue.length() > 0) {
+      window.setTimeout(() => {
+        loadScript();
+      });
     }
   }
 
@@ -165,7 +165,7 @@ function lazyScripts(customOptions = {}) {
     }
 
     scriptQueue.push(
-        JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]')
+      JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]'),
     );
   }
 
@@ -215,8 +215,8 @@ function lazyScripts(customOptions = {}) {
     }
 
     const io = new IntersectionObserver(
-        (entries, observer) => intersectionCallback(entries, observer),
-        options.intersectionObserverOptions,
+      (entries, observer) => intersectionCallback(entries, observer),
+      options.intersectionObserverOptions,
     );
 
     lazyScripts.forEach((lazyScript) => {

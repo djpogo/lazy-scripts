@@ -5,7 +5,7 @@ import ScriptQueue from './script-queue';
  * a lazy loader for your javascripts
  * @param {Object} customOptions - define your lazy-script-data selectors
  */
-export default function(customOptions = {}) {
+export default function (customOptions = {}) {
   const options = {
     lazyScriptsInitialized: 'lsi',
     lazyScriptSelector: '[data-lazy-script]',
@@ -28,7 +28,7 @@ export default function(customOptions = {}) {
 
   const loadedScripts = {};
   const lazyScripts = document.querySelectorAll(
-      `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
+    `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`,
   );
 
 
@@ -41,9 +41,9 @@ export default function(customOptions = {}) {
    */
   function hyphensToCamelCase(string) {
     return string
-        .replace('[data-', '').
-        replace(']', '').
-        replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+      .replace('[data-', '')
+      .replace(']', '')
+      .replace(/-([a-z])/g, (g) => g[1].toUpperCase());
   }
 
   /**
@@ -83,8 +83,8 @@ export default function(customOptions = {}) {
         loadScript();
         if (window.CustomEvent) {
           const event = new CustomEvent(
-              'lazyScriptLoaded',
-              {detail: {scriptSrc}}
+            'lazyScriptLoaded',
+            { detail: { scriptSrc } },
           );
           document.body.dispatchEvent(event);
         }
@@ -95,12 +95,12 @@ export default function(customOptions = {}) {
         loadScript();
       };
       document.body.appendChild(script);
-    } else {
-      if (scriptQueue.length() > 0) {
-        window.setTimeout(() => {
-          loadScript();
-        });
-      }
+      return;
+    }
+    if (scriptQueue.length() > 0) {
+      window.setTimeout(() => {
+        loadScript();
+      });
     }
   }
 
@@ -118,7 +118,7 @@ export default function(customOptions = {}) {
     }
 
     scriptQueue.push(
-        JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]')
+      JSON.parse(lazyElement.dataset[lazyScriptsDataName] || '[]'),
     );
   }
 
@@ -168,8 +168,8 @@ export default function(customOptions = {}) {
     }
 
     const io = new IntersectionObserver(
-        (entries, observer) => intersectionCallback(entries, observer),
-        options.intersectionObserverOptions,
+      (entries, observer) => intersectionCallback(entries, observer),
+      options.intersectionObserverOptions,
     );
 
     lazyScripts.forEach((lazyScript) => {
