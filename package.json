@@ -2,7 +2,7 @@
   "name": "lazy-scripts",
   "description": "load, parse and execute scripts when needed",
   "scriptname": "LazyScripts",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "keywords": [
     "lazy-loading",
     "javascript"

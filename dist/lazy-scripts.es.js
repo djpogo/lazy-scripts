@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.3.0 - 2019-09-10
+/*! LazyScripts - v0.4.0 - 2019-09-10
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -76,7 +76,11 @@ function lazyScripts (customOptions = {}) {
     mutationObserverOptions: {
       attributes: false,
       childList: true,
-      subTree: true,
+      subtree: true,
+    },
+    intersectionObserverOptions: {
+      root: null,
+      threshold: 0,
     },
     ...customOptions,
   };
@@ -96,9 +100,10 @@ function lazyScripts (customOptions = {}) {
   let scriptQueue;
   let loadingScript = false;
 
-  const lazyScriptSelector =
-      `${options.lazyScriptSelector}:not(${options.lazyScriptDoneSelector}),
-      ${options.lazyScriptsSelector}:not(${options.lazyScriptDoneSelector})`;
+  const lazyScriptSelector = `
+    ${options.lazyScriptSelector}:not(${options.lazyScriptDoneSelector}),
+    ${options.lazyScriptsSelector}:not(${options.lazyScriptDoneSelector})
+  `;
 
   const loadedScripts = {};
   const lazyScripts = document.querySelectorAll(lazyScriptSelector);
@@ -141,7 +146,7 @@ function lazyScripts (customOptions = {}) {
         if (window.CustomEvent) {
           const event = new CustomEvent(
             options.lazyScriptLoadedEventName,
-            { detail: { scriptSrc } }
+            { detail: { scriptSrc } },
           );
           document.body.dispatchEvent(event);
         }
@@ -231,20 +236,18 @@ function lazyScripts (customOptions = {}) {
         }
 
         // check if fragments subtree contains lazy-script[s] support
-        fragment.querySelectorAll(
-          `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
-        ).forEach(element => {
-          if (intersectionObserver) {
-            intersectionObserver.observe(element);
-          } else {
-            fallbackScriptLoad();
-          }
-        });
+        fragment.querySelectorAll(lazyScriptSelector)
+          .forEach((element) => {
+            if (intersectionObserver) {
+              intersectionObserver.observe(element);
+            } else {
+              fallbackScriptLoad();
+            }
+          });
       });
     });
   }
 
-  
   /**
    * check existance of MutationObserver
    * and setup MutationObserver
@@ -261,8 +264,9 @@ function lazyScripts (customOptions = {}) {
     const mo = new MutationObserver(
       (mutationsList, observer) => mutationCallback(mutationsList),
     );
+    const body = document.querySelector('body');
     mo.observe(
-      document.body,
+      body,
       options.mutationObserverOptions,
     );
   }
@@ -303,9 +307,9 @@ function lazyScripts (customOptions = {}) {
     lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
     lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
     lazyScriptDoneName = hyphensToCamelCase(options.lazyScriptDoneSelector);
-  
-    setupIntersectionObserver();
+
     setupMutationObserver();
+    setupIntersectionObserver();
   }
   setup();
 }
