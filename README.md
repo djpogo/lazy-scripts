@@ -68,6 +68,9 @@ LazyScripts fires on every successful loaded script a `lazyScriptLoaded` CustomE
 
 I **de-include** the `CustomEvent` polyfill I added in `0.2.2`. LazyScripts still dispatches CustomEvents if your browser supports it. It is up to you to include (or no) the polyfill you like the most.
 
+## MutationObserver (since 0.3.0)
+With `0.3.0` a MutationObserver watches your DOM changes and will trigger lazy scripts on DOM changes. No work needed on your side.
+
 ## Script Adjustments
 
 If your script(s) wait for a `DOMContentLoaded` or `window.load` you need to change that. These Events will be long forgotten when your scripts will be loaded, parsed and executed.

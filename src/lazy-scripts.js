@@ -1,5 +1,6 @@
 import 'mdn-polyfills/NodeList.prototype.forEach';
 import ScriptQueue from './script-queue';
+import hyphensToCamelCase from './utils/hyphensToCamelCase';
 /**
  * LazyScripts
  * a lazy loader for your javascripts
@@ -21,6 +22,7 @@ export default function (customOptions = {}) {
   };
 
   const html = document.documentElement;
+  let intersectionObserver;
 
   if (html.dataset[options.lazyScriptsInitialized] === 'true') {
     // eslint-disable-next-line no-console
@@ -40,20 +42,6 @@ export default function (customOptions = {}) {
 
   const loadedScripts = {};
   const lazyScripts = document.querySelectorAll(lazyScriptSelector);
-
-  /**
-   * convert the `querySelectorAll` compatible class options of lazySelectors
-   * and return a string, you can use in `dataset[string]`
-   * @see https://stackoverflow.com/a/6661012
-   * @param {String} string - the text you want to convert
-   * @return {String}
-   */
-  function hyphensToCamelCase(string) {
-    return string
-      .replace('[data-', '')
-      .replace(']', '')
-      .replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-  }
 
   /**
    * store all `<script src="…"></script>` scripts
@@ -165,18 +153,35 @@ export default function (customOptions = {}) {
    * @param {MutationObserver} observer
    */
   function mutationCallback(mutationsList, observer) {
-    /*mutationsList.forEach((mutation) => {
+    mutationsList.forEach((mutation) => {
       mutation.addedNodes.forEach((fragment) => {
+        if (!fragment.dataset) {
+          return;
+        }
+        // check if added fragment contains lazy-script[s] data attribute
         if (
           fragment.dataset[lazyScriptDataName]
           || fragment.dataset[lazyScriptsDataName]
-          || fragment.querySelectorAll(
-              `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
-          )) {
-
+        ) {
+          if (intersectionObserver) {
+            intersectionObserver.observe(fragment);
+          } else {
+            fallbackScriptLoad();
+          }
         }
+
+        // check if fragments subtree contains lazy-script[s] support
+        fragment.querySelectorAll(
+          `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
+        ).forEach(element => {
+          if (intersectionObserver) {
+            intersectionObserver.observe(element);
+          } else {
+            fallbackScriptLoad();
+          }
+        });
       });
-    });*/
+    });
   }
 
   
@@ -216,13 +221,13 @@ export default function (customOptions = {}) {
       return;
     }
 
-    const io = new IntersectionObserver(
+    intersectionObserver = new IntersectionObserver(
       (entries, observer) => intersectionCallback(entries, observer),
       options.intersectionObserverOptions,
     );
 
     lazyScripts.forEach((lazyScript) => {
-      io.observe(lazyScript);
+      intersectionObserver.observe(lazyScript);
     });
   }
 
