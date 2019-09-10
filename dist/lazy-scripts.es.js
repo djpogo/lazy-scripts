@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.2.4 - 2019-09-10
+/*! LazyScripts - v0.3.0 - 2019-09-10
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -48,6 +48,20 @@ class ScriptQueue {
 }
 
 /**
+   * convert the `querySelectorAll` compatible class options of lazySelectors
+   * and return a string, you can use in `dataset[string]`
+   * @see https://stackoverflow.com/a/6661012
+   * @param {String} string - the text you want to convert
+   * @return {String}
+   */
+  function hyphensToCamelCase (string) {
+    return string
+      .replace('[data-', '')
+      .replace(']', '')
+      .replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+  }
+
+/**
  * LazyScripts
  * a lazy loader for your javascripts
  * @param {Object} customOptions - define your lazy-script-data selectors
@@ -68,6 +82,7 @@ function lazyScripts (customOptions = {}) {
   };
 
   const html = document.documentElement;
+  let intersectionObserver;
 
   if (html.dataset[options.lazyScriptsInitialized] === 'true') {
     // eslint-disable-next-line no-console
@@ -87,20 +102,6 @@ function lazyScripts (customOptions = {}) {
 
   const loadedScripts = {};
   const lazyScripts = document.querySelectorAll(lazyScriptSelector);
-
-  /**
-   * convert the `querySelectorAll` compatible class options of lazySelectors
-   * and return a string, you can use in `dataset[string]`
-   * @see https://stackoverflow.com/a/6661012
-   * @param {String} string - the text you want to convert
-   * @return {String}
-   */
-  function hyphensToCamelCase(string) {
-    return string
-      .replace('[data-', '')
-      .replace(']', '')
-      .replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-  }
 
   /**
    * store all `<script src="…"></script>` scripts
@@ -212,18 +213,35 @@ function lazyScripts (customOptions = {}) {
    * @param {MutationObserver} observer
    */
   function mutationCallback(mutationsList, observer) {
-    /*mutationsList.forEach((mutation) => {
+    mutationsList.forEach((mutation) => {
       mutation.addedNodes.forEach((fragment) => {
+        if (!fragment.dataset) {
+          return;
+        }
+        // check if added fragment contains lazy-script[s] data attribute
         if (
           fragment.dataset[lazyScriptDataName]
           || fragment.dataset[lazyScriptsDataName]
-          || fragment.querySelectorAll(
-              `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
-          )) {
-
+        ) {
+          if (intersectionObserver) {
+            intersectionObserver.observe(fragment);
+          } else {
+            fallbackScriptLoad();
+          }
         }
+
+        // check if fragments subtree contains lazy-script[s] support
+        fragment.querySelectorAll(
+          `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
+        ).forEach(element => {
+          if (intersectionObserver) {
+            intersectionObserver.observe(element);
+          } else {
+            fallbackScriptLoad();
+          }
+        });
       });
-    });*/
+    });
   }
 
   
@@ -241,7 +259,7 @@ function lazyScripts (customOptions = {}) {
     }
 
     const mo = new MutationObserver(
-      (mutationsList, observer) => mutationCallback(),
+      (mutationsList, observer) => mutationCallback(mutationsList),
     );
     mo.observe(
       document.body,
@@ -263,13 +281,13 @@ function lazyScripts (customOptions = {}) {
       return;
     }
 
-    const io = new IntersectionObserver(
+    intersectionObserver = new IntersectionObserver(
       (entries, observer) => intersectionCallback(entries, observer),
       options.intersectionObserverOptions,
     );
 
     lazyScripts.forEach((lazyScript) => {
-      io.observe(lazyScript);
+      intersectionObserver.observe(lazyScript);
     });
   }
 

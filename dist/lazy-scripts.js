@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.2.4 - 2019-09-10
+/*! LazyScripts - v0.3.0 - 2019-09-10
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -168,6 +168,19 @@
   }();
 
   /**
+   * convert the `querySelectorAll` compatible class options of lazySelectors
+   * and return a string, you can use in `dataset[string]`
+   * @see https://stackoverflow.com/a/6661012
+   * @param {String} string - the text you want to convert
+   * @return {String}
+   */
+  function hyphensToCamelCase (string) {
+    return string.replace('[data-', '').replace(']', '').replace(/-([a-z])/g, function (g) {
+      return g[1].toUpperCase();
+    });
+  }
+
+  /**
    * LazyScripts
    * a lazy loader for your javascripts
    * @param {Object} customOptions - define your lazy-script-data selectors
@@ -190,6 +203,7 @@
     }, customOptions);
 
     var html = document.documentElement;
+    var intersectionObserver;
 
     if (html.dataset[options.lazyScriptsInitialized] === 'true') {
       // eslint-disable-next-line no-console
@@ -206,24 +220,10 @@
     var loadedScripts = {};
     var lazyScripts = document.querySelectorAll(lazyScriptSelector);
     /**
-     * convert the `querySelectorAll` compatible class options of lazySelectors
-     * and return a string, you can use in `dataset[string]`
-     * @see https://stackoverflow.com/a/6661012
-     * @param {String} string - the text you want to convert
-     * @return {String}
-     */
-
-    function hyphensToCamelCase(string) {
-      return string.replace('[data-', '').replace(']', '').replace(/-([a-z])/g, function (g) {
-        return g[1].toUpperCase();
-      });
-    }
-    /**
      * store all `<script src="…"></script>` scripts
      * to know that they are available and don't need to
      * be loaded again
      */
-
 
     function initLoadedScripts() {
       document.querySelectorAll('script').forEach(function (script) {
@@ -346,19 +346,33 @@
      */
 
 
-    function mutationCallback(mutationsList, observer) {}
-    /*mutationsList.forEach((mutation) => {
-      mutation.addedNodes.forEach((fragment) => {
-        if (
-          fragment.dataset[lazyScriptDataName]
-          || fragment.dataset[lazyScriptsDataName]
-          || fragment.querySelectorAll(
-              `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
-          )) {
-         }
-      });
-    });*/
+    function mutationCallback(mutationsList, observer) {
+      mutationsList.forEach(function (mutation) {
+        mutation.addedNodes.forEach(function (fragment) {
+          if (!fragment.dataset) {
+            return;
+          } // check if added fragment contains lazy-script[s] data attribute
 
+
+          if (fragment.dataset[lazyScriptDataName] || fragment.dataset[lazyScriptsDataName]) {
+            if (intersectionObserver) {
+              intersectionObserver.observe(fragment);
+            } else {
+              fallbackScriptLoad();
+            }
+          } // check if fragments subtree contains lazy-script[s] support
+
+
+          fragment.querySelectorAll("".concat(options.lazyScriptSelector, ", ").concat(options.lazyScriptsSelector)).forEach(function (element) {
+            if (intersectionObserver) {
+              intersectionObserver.observe(element);
+            } else {
+              fallbackScriptLoad();
+            }
+          });
+        });
+      });
+    }
     /**
      * check existance of MutationObserver
      * and setup MutationObserver
@@ -372,7 +386,7 @@
       }
 
       var mo = new MutationObserver(function (mutationsList, observer) {
-        return mutationCallback();
+        return mutationCallback(mutationsList);
       });
       mo.observe(document.body, options.mutationObserverOptions);
     }
@@ -395,11 +409,11 @@
         return;
       }
 
-      var io = new IntersectionObserver(function (entries, observer) {
+      intersectionObserver = new IntersectionObserver(function (entries, observer) {
         return intersectionCallback(entries, observer);
       }, options.intersectionObserverOptions);
       lazyScripts.forEach(function (lazyScript) {
-        io.observe(lazyScript);
+        intersectionObserver.observe(lazyScript);
       });
     }
     /**
