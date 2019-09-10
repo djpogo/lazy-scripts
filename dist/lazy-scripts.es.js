@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.2.4 - 2019-08-28
+/*! LazyScripts - v0.2.4 - 2019-09-10
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -57,6 +57,13 @@ function lazyScripts (customOptions = {}) {
     lazyScriptsInitialized: 'lsi',
     lazyScriptSelector: '[data-lazy-script]',
     lazyScriptsSelector: '[data-lazy-scripts]',
+    lazyScriptDoneSelector: '[data-lazy-script-done]',
+    lazyScriptLoadedEventName: 'lazyScriptLoaded',
+    mutationObserverOptions: {
+      attributes: false,
+      childList: true,
+      subTree: true,
+    },
     ...customOptions,
   };
 
@@ -70,14 +77,16 @@ function lazyScripts (customOptions = {}) {
 
   let lazyScriptDataName = '';
   let lazyScriptsDataName = '';
+  let lazyScriptDoneName = '';
   let scriptQueue;
   let loadingScript = false;
 
-  const loadedScripts = {};
-  const lazyScripts = document.querySelectorAll(
-    `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`,
-  );
+  const lazyScriptSelector =
+      `${options.lazyScriptSelector}:not(${options.lazyScriptDoneSelector}),
+      ${options.lazyScriptsSelector}:not(${options.lazyScriptDoneSelector})`;
 
+  const loadedScripts = {};
+  const lazyScripts = document.querySelectorAll(lazyScriptSelector);
 
   /**
    * convert the `querySelectorAll` compatible class options of lazySelectors
@@ -130,8 +139,8 @@ function lazyScripts (customOptions = {}) {
         loadScript();
         if (window.CustomEvent) {
           const event = new CustomEvent(
-            'lazyScriptLoaded',
-            { detail: { scriptSrc } },
+            options.lazyScriptLoadedEventName,
+            { detail: { scriptSrc } }
           );
           document.body.dispatchEvent(event);
         }
@@ -186,25 +195,65 @@ function lazyScripts (customOptions = {}) {
    * @param {IntersectionObserver} observer - the IntersectionObserver itself
    */
   function intersectionCallback(entries, observer) {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        processElement(entry.target);
-        observer.unobserve(entry.target);
+    entries.forEach(({ isIntersecting, target }) => {
+      if (isIntersecting) {
+        processElement(target);
+        // eslint-disable-next-line no-param-reassign
+        target.dataset[lazyScriptDoneName] = true;
+        observer.unobserve(target);
       }
     });
   }
 
   /**
-   * setup IntersectionObserver (if available)
-   * or start loading all scripts within a `requestAnimationFrame`
-   * callback - if available
+   * callback from MutationObserver of document.body element
+   * reinitialize intersectionObserver if an element is added
+   * @param {Array<MutationRecord>} mutationsList
+   * @param {MutationObserver} observer
    */
-  function setup() {
-    html.dataset[options.lazyScriptsInitialized] = true;
-    initLoadedScripts();
-    scriptQueue = new ScriptQueue(loadScript);
-    lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
-    lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
+  function mutationCallback(mutationsList, observer) {
+    /*mutationsList.forEach((mutation) => {
+      mutation.addedNodes.forEach((fragment) => {
+        if (
+          fragment.dataset[lazyScriptDataName]
+          || fragment.dataset[lazyScriptsDataName]
+          || fragment.querySelectorAll(
+              `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
+          )) {
+
+        }
+      });
+    });*/
+  }
+
+  
+  /**
+   * check existance of MutationObserver
+   * and setup MutationObserver
+   */
+  function setupMutationObserver() {
+    if (!window.MutationObserver) {
+      // eslint-disable-next-line no-console
+      console.info(
+        'MutationObserver not available.',
+        'DOM manipulations will not be recognised',
+      );
+    }
+
+    const mo = new MutationObserver(
+      (mutationsList, observer) => mutationCallback(),
+    );
+    mo.observe(
+      document.body,
+      options.mutationObserverOptions,
+    );
+  }
+
+  /**
+   * check existance of IntersectionObserver
+   * and setup IntersectionObserver
+   */
+  function setupIntersectionObserver() {
     if (!window.IntersectionObserver) {
       if (!window.requestAnimationFrame) {
         fallbackScriptLoad();
@@ -224,6 +273,22 @@ function lazyScripts (customOptions = {}) {
     });
   }
 
+  /**
+   * setup IntersectionObserver (if available)
+   * or start loading all scripts within a `requestAnimationFrame`
+   * callback - if available
+   */
+  function setup() {
+    html.dataset[options.lazyScriptsInitialized] = true;
+    initLoadedScripts();
+    scriptQueue = new ScriptQueue(loadScript);
+    lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
+    lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
+    lazyScriptDoneName = hyphensToCamelCase(options.lazyScriptDoneSelector);
+  
+    setupIntersectionObserver();
+    setupMutationObserver();
+  }
   setup();
 }
 
