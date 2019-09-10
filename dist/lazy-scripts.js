@@ -1,4 +1,4 @@
-/*! LazyScripts - v0.4.0 - 2019-09-10
+/*! LazyScripts - v0.3.0 - 2019-09-10
 * https://lazyscripts.raoulkramer.de
 * Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
@@ -198,11 +198,7 @@
       mutationObserverOptions: {
         attributes: false,
         childList: true,
-        subtree: true
-      },
-      intersectionObserverOptions: {
-        root: null,
-        threshold: 0
+        subTree: true
       }
     }, customOptions);
 
@@ -220,7 +216,7 @@
     var lazyScriptDoneName = '';
     var scriptQueue;
     var loadingScript = false;
-    var lazyScriptSelector = "\n    ".concat(options.lazyScriptSelector, ":not(").concat(options.lazyScriptDoneSelector, "),\n    ").concat(options.lazyScriptsSelector, ":not(").concat(options.lazyScriptDoneSelector, ")\n  ");
+    var lazyScriptSelector = "".concat(options.lazyScriptSelector, ":not(").concat(options.lazyScriptDoneSelector, "),\n      ").concat(options.lazyScriptsSelector, ":not(").concat(options.lazyScriptDoneSelector, ")");
     var loadedScripts = {};
     var lazyScripts = document.querySelectorAll(lazyScriptSelector);
     /**
@@ -367,7 +363,7 @@
           } // check if fragments subtree contains lazy-script[s] support
 
 
-          fragment.querySelectorAll(lazyScriptSelector).forEach(function (element) {
+          fragment.querySelectorAll("".concat(options.lazyScriptSelector, ", ").concat(options.lazyScriptsSelector)).forEach(function (element) {
             if (intersectionObserver) {
               intersectionObserver.observe(element);
             } else {
@@ -392,8 +388,7 @@
       var mo = new MutationObserver(function (mutationsList, observer) {
         return mutationCallback(mutationsList);
       });
-      var body = document.querySelector('body');
-      mo.observe(body, options.mutationObserverOptions);
+      mo.observe(document.body, options.mutationObserverOptions);
     }
     /**
      * check existance of IntersectionObserver
@@ -435,8 +430,8 @@
       lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
       lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
       lazyScriptDoneName = hyphensToCamelCase(options.lazyScriptDoneSelector);
-      setupMutationObserver();
       setupIntersectionObserver();
+      setupMutationObserver();
     }
 
     setup();
