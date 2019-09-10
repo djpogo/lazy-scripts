@@ -9,13 +9,23 @@
         "browser": true
     },
     "rules": {
-        "valid-jsdoc": [2, {
+        "valid-jsdoc": ["error", {
             "requireParamDescription": false,
             "requireReturnDescription": false,
             "requireReturn": false,
             "prefer": {
                 "returns": "return"
-            },
+            }
         }],
+        "require-jsdoc": ["error", {
+            "require": {
+              "FunctionDeclaration": true,
+              "MethodDefinition": true,
+              "ClassDeclaration": true
+            }
+          }],
+        "no-unused-vars": [
+            "error", {"args": "none"}
+        ]
     }
 }
