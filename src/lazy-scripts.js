@@ -16,7 +16,11 @@ export default function (customOptions = {}) {
     mutationObserverOptions: {
       attributes: false,
       childList: true,
-      subTree: true,
+      subtree: true,
+    },
+    intersectionObserverOptions: {
+      root: null,
+      threshold: 0,
     },
     ...customOptions,
   };
@@ -36,9 +40,10 @@ export default function (customOptions = {}) {
   let scriptQueue;
   let loadingScript = false;
 
-  const lazyScriptSelector =
-      `${options.lazyScriptSelector}:not(${options.lazyScriptDoneSelector}),
-      ${options.lazyScriptsSelector}:not(${options.lazyScriptDoneSelector})`;
+  const lazyScriptSelector = `
+    ${options.lazyScriptSelector}:not(${options.lazyScriptDoneSelector}),
+    ${options.lazyScriptsSelector}:not(${options.lazyScriptDoneSelector})
+  `;
 
   const loadedScripts = {};
   const lazyScripts = document.querySelectorAll(lazyScriptSelector);
@@ -81,7 +86,7 @@ export default function (customOptions = {}) {
         if (window.CustomEvent) {
           const event = new CustomEvent(
             options.lazyScriptLoadedEventName,
-            { detail: { scriptSrc } }
+            { detail: { scriptSrc } },
           );
           document.body.dispatchEvent(event);
         }
@@ -171,20 +176,18 @@ export default function (customOptions = {}) {
         }
 
         // check if fragments subtree contains lazy-script[s] support
-        fragment.querySelectorAll(
-          `${options.lazyScriptSelector}, ${options.lazyScriptsSelector}`
-        ).forEach(element => {
-          if (intersectionObserver) {
-            intersectionObserver.observe(element);
-          } else {
-            fallbackScriptLoad();
-          }
-        });
+        fragment.querySelectorAll(lazyScriptSelector)
+          .forEach((element) => {
+            if (intersectionObserver) {
+              intersectionObserver.observe(element);
+            } else {
+              fallbackScriptLoad();
+            }
+          });
       });
     });
   }
 
-  
   /**
    * check existance of MutationObserver
    * and setup MutationObserver
@@ -201,8 +204,9 @@ export default function (customOptions = {}) {
     const mo = new MutationObserver(
       (mutationsList, observer) => mutationCallback(mutationsList, observer),
     );
+    const body = document.querySelector('body');
     mo.observe(
-      document.body,
+      body,
       options.mutationObserverOptions,
     );
   }
@@ -243,9 +247,9 @@ export default function (customOptions = {}) {
     lazyScriptDataName = hyphensToCamelCase(options.lazyScriptSelector);
     lazyScriptsDataName = hyphensToCamelCase(options.lazyScriptsSelector);
     lazyScriptDoneName = hyphensToCamelCase(options.lazyScriptDoneSelector);
-  
-    setupIntersectionObserver();
+
     setupMutationObserver();
+    setupIntersectionObserver();
   }
   setup();
 }

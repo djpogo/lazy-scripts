@@ -93,7 +93,8 @@
                 .addEventListener('click', (event) => {
                     const div = document.createElement('div');
                     div.dataset.lazyScript = '/demo/dummy-js/script-3.js';
-                    document.body.appendChild(div);
+                    event.target.parentNode.appendChild(div);
+                    div.textContent = 'Element added';
                 });
             
             document.body.addEventListener('lazyScriptLoaded', (event) => {
