@@ -15,28 +15,23 @@
   "browser": "dist/lazy-scripts.min.js",
   "main": "dist/lazy-scripts.js",
   "module": "dist/lazy-scripts.es.js",
-  "licenses": [
-    {
-      "name": "GNU General Public License v3.0",
-      "url": "https://www.gnu.org/licenses/gpl-3.0.en.html"
-    }
-  ],
+  "license": "GPL-3.0",
   "devDependencies": {
-    "@babel/core": "^7.6.0",
-    "@babel/preset-env": "^7.6.0",
-    "@babel/preset-stage-0": "^7.0.0",
-    "eslint": "^6.3.0",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2",
-    "http-server": "^0.11.1",
-    "rimraf": "^3.0.0",
-    "rollup": "^1.21.2",
-    "rollup-plugin-babel": "^4.3.3",
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
+    "@babel/preset-stage-0": "^7.8.3",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "http-server": "^0.12.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^1.32.1",
+    "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-filesize": "^6.2.0",
+    "rollup-plugin-filesize": "^6.2.1",
     "rollup-plugin-license": "^0.12.1",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-uglify": "^6.0.3"
+    "rollup-plugin-uglify": "^6.0.4"
   },
   "scripts": {
     "build": "rollup -c",
@@ -57,6 +52,6 @@
   },
   "homepage": "https://lazyscripts.raoulkramer.de",
   "dependencies": {
-    "mdn-polyfills": "^5.18.0"
+    "mdn-polyfills": "^5.20.0"
   }
 }

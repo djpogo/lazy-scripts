@@ -1,6 +1,6 @@
-/*! LazyScripts - v0.3.1 - 2019-09-10
+/*! LazyScripts - v0.3.1 - 2020-04-26
 * https://lazyscripts.raoulkramer.de
-* Copyright (c) 2019 Raoul Kramer; Licensed GNU General Public License v3.0 */
+* Copyright (c) 2020 Raoul Kramer; Licensed GNU General Public License v3.0 */
 
 
 window.NodeList&&!NodeList.prototype.forEach&&(NodeList.prototype.forEach=function(o,t){t=t||window;for(var i=0;i<this.length;i++)o.call(t,this[i],i,this);});
