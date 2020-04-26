@@ -1,6 +1,6 @@
-/*! LazyScripts - v0.3.1 - 2020-04-26
+/*! LazyScripts - v0.3.2 - 2020-04-26
 * https://lazyscripts.raoulkramer.de
-* Copyright (c) 2020 Raoul Kramer; Licensed GNU General Public License v3.0 */
+* Copyright (c) 2020 Raoul Kramer; Licensed  */
 
 
 (function (global, factory) {
